@@ -9,7 +9,26 @@
 :root{--bg:#0f0d0b;--bg2:#1a1510;--bg3:#221c15;--bg4:#2a2218;--border:#2e2419;--border2:#3d3025;--text:#f0e6d8;--text2:#8a7060;--text3:#5a4535;--accent:#e8805a;--accent2:#c4603a;--accent-bg:#2a1a10;--green:#6fcf8a;--green-bg:#0d2015;--red:#e07070;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
-.app{max-width:700px;margin:0 auto;padding:1.5rem 1rem 4rem;}
+.app{width:100%;max-width:100%;padding:0;}
+.app-shell{display:grid;grid-template-columns:200px 1fr;min-height:100vh;}
+.app-sidebar{border-right:0.5px solid var(--border);padding:2rem 1.25rem;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--bg);}
+.app-sidebar .logo{font-size:18px;font-weight:400;color:var(--text);margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:0.5px solid var(--border);}
+.app-sidebar .date-str{font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.5rem;}
+.nav-btn{font-size:11px;padding:8px 12px;border:none;background:none;cursor:pointer;color:var(--text2);white-space:nowrap;font-family:var(--font);letter-spacing:.05em;text-transform:uppercase;transition:all .15s;text-align:left;border-radius:6px;width:100%;}
+.nav-btn.active{color:var(--accent);background:var(--accent-bg);}
+.nav-btn:hover:not(.active){color:var(--text);background:var(--bg3);}
+.app-main{padding:2rem 2.5rem;max-width:900px;}
+@media(max-width:768px){
+  .app-shell{grid-template-columns:1fr;}
+  .app-sidebar{display:none;}
+  .app-main{padding:1rem;}
+  .mobile-tabs{display:flex!important;}
+}
+.mobile-tabs{display:none;gap:1px;border-bottom:0.5px solid var(--border);overflow-x:auto;margin-bottom:1.25rem;scrollbar-width:none;background:var(--bg);padding:0 1rem;}
+.mobile-tabs::-webkit-scrollbar{display:none;}
+.tab{font-size:11px;padding:7px 11px;border:none;background:none;cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;margin-bottom:-0.5px;white-space:nowrap;font-family:var(--font);letter-spacing:.05em;text-transform:uppercase;transition:color .15s;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab:hover:not(.active){color:var(--text2);}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
 .header h1{font-size:20px;font-weight:400;letter-spacing:.02em;}
 .date-str{font-size:11px;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
@@ -130,8 +149,23 @@ canvas{width:100%!important;display:block;}
 </head>
 <body>
 <div class="app">
-<div class="header"><h1>Nico</h1><span class="date-str" id="today-date"></span></div>
-<div class="tabs">
+<div class="app-shell">
+<!-- SIDEBAR -->
+<div class="app-sidebar">
+  <div class="logo">Nico</div>
+  <div class="date-str" id="today-date"></div>
+  <button class="nav-btn active" onclick="switchTab('inicio',this)">Inicio</button>
+  <button class="nav-btn" onclick="switchTab('habitos',this)">Hábitos</button>
+  <button class="nav-btn" onclick="switchTab('peso',this)">Peso</button>
+  <button class="nav-btn" onclick="switchTab('workout',this)">Workout</button>
+  <button class="nav-btn" onclick="switchTab('sleep',this)">Sleep</button>
+  <button class="nav-btn" onclick="switchTab('comidas',this)">Comidas</button>
+  <button class="nav-btn" onclick="switchTab('goals',this)">Goals</button>
+  <button class="nav-btn" onclick="switchTab('todos',this)">To-do</button>
+  <button class="nav-btn" onclick="switchTab('projects',this)">Proyectos</button>
+</div>
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
   <button class="tab active" onclick="switchTab('inicio',this)">Inicio</button>
   <button class="tab" onclick="switchTab('habitos',this)">Hábitos</button>
   <button class="tab" onclick="switchTab('peso',this)">Peso</button>
@@ -142,6 +176,8 @@ canvas{width:100%!important;display:block;}
   <button class="tab" onclick="switchTab('todos',this)">To-do</button>
   <button class="tab" onclick="switchTab('projects',this)">Proyectos</button>
 </div>
+<!-- MAIN CONTENT -->
+<div class="app-main">
 <!-- INICIO -->
 <div class="section active" id="section-inicio">
   <div class="stats-strip">
@@ -290,9 +326,11 @@ function render(){
   renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();
 }
 function switchTab(name,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab,.nav-btn').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  btn.classList.add('active');document.getElementById('section-'+name).classList.add('active');
+  // activate matching buttons in both sidebar and mobile tabs
+  document.querySelectorAll('.tab,.nav-btn').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"))t.classList.add('active');});
+  document.getElementById('section-'+name).classList.add('active');
   if(name==='peso')setTimeout(renderPesoChart,50);
   if(name==='workout'){renderWkStats();renderCalendar();}
   if(name==='sleep')setTimeout(renderSleepChart,50);
