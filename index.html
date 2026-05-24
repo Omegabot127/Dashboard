@@ -172,6 +172,43 @@ canvas{width:100%!important;display:block;}
 .day-ring-stat{text-align:center;}
 .day-ring-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
 .day-ring-stat-val{font-size:13px;color:var(--text);font-family:'Courier New',monospace;}
+/* GOALS V2 */
+.g-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;}
+.g-done-count{font-size:28px;font-weight:600;font-family:'Courier New',monospace;color:var(--text);line-height:1;}
+.g-seg-row{display:flex;gap:3px;margin-top:8px;margin-bottom:4px;}
+.g-seg{height:3px;flex:1;border-radius:2px;background:var(--bg4);transition:background .3s;}
+.g-seg.filled{background:var(--green);}
+.g-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.03);border:0.5px solid rgba(255,255,255,.06);margin-bottom:6px;transition:background .15s;}
+.g-row:hover{background:rgba(255,255,255,.055);}
+.g-row.is-done{opacity:.45;background:rgba(107,227,164,.04)!important;}
+.g-row.is-queue{background:rgba(242,192,99,.10)!important;box-shadow:inset 3px 0 0 0 #F2C063;}
+.g-row.drag-over{border-top:2px solid var(--accent);}
+.g-drag{font-size:14px;color:var(--text3);cursor:grab;opacity:0;transition:opacity .15s;letter-spacing:-2px;flex-shrink:0;user-select:none;}
+.g-row:hover .g-drag{opacity:1;}
+.g-cb{width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,.18);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0;}
+.g-cb.checked{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(107,227,164,.4);font-size:11px;color:#0d2015;font-weight:700;}
+@keyframes g-bounce{0%{transform:scale(1);}40%{transform:scale(1.3);}70%{transform:scale(.9);}100%{transform:scale(1);}}
+.g-cb.bounce{animation:g-bounce .35s ease;}
+.g-text{flex:1;font-size:13px;color:var(--text);outline:none;cursor:text;min-width:0;word-break:break-word;}
+.g-row.is-done .g-text{text-decoration:line-through;color:var(--text3);}
+.g-row.is-queue .g-text{color:#FFE2A8;}
+.g-queue-btn{background:none;border:none;cursor:pointer;font-size:14px;padding:2px 5px;opacity:.4;transition:all .2s;color:var(--text3);flex-shrink:0;}
+.g-queue-btn.on{opacity:1;color:#F2C063;text-shadow:0 0 8px rgba(242,192,99,.6);}
+.g-queue-btn:hover{opacity:.8;}
+.g-del-btn{background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);opacity:0;padding:2px 4px;transition:opacity .15s;flex-shrink:0;}
+.g-row:hover .g-del-btn{opacity:.5;}
+.g-del-btn:hover{opacity:1!important;color:var(--red);}
+.g-tomorrow-cb{width:18px;height:18px;border-radius:5px;border:1.5px solid rgba(255,255,255,.1);background:none;flex-shrink:0;cursor:not-allowed;}
+.g-show-more{width:100%;background:none;border:1px dashed var(--border2);border-radius:8px;padding:7px;font-size:11px;color:var(--text3);cursor:pointer;margin-bottom:6px;letter-spacing:.03em;font-family:var(--font);}
+.g-show-more:hover{color:var(--text2);border-color:var(--text3);opacity:1;}
+.g-move-btn{width:100%;background:none;border:1px dashed var(--border2);border-radius:8px;padding:8px;font-size:11px;color:var(--text3);cursor:pointer;margin-top:4px;letter-spacing:.03em;font-family:var(--font);}
+.g-move-btn:hover{color:var(--text2);border-color:var(--text3);opacity:1;}
+.g-qadd{display:flex;gap:8px;padding-top:12px;border-top:0.5px solid var(--border);margin-top:8px;}
+.g-qadd input{flex:1;font-size:13px;}
+.g-polish-btn{background:var(--bg3);color:var(--text2);border:0.5px solid var(--border2);border-radius:6px;padding:6px 10px;font-size:11px;cursor:pointer;white-space:nowrap;font-family:var(--font);transition:color .15s;}
+.g-polish-btn:hover{color:var(--text);opacity:1;}
+.g-add-btn{background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--font);}
+.g-add-btn:hover{opacity:.85;}
 </style>
 </head>
 <body>
@@ -334,13 +371,41 @@ canvas{width:100%!important;display:block;}
 </div>
 <!-- GOALS -->
 <div class="section" id="section-goals">
-  <div class="card" style="border-left:2px solid var(--accent);border-radius:0 10px 10px 0;">
-    <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Objetivo principal</div>
-    <div style="font-size:16px;font-weight:400;color:var(--text);">Subir de peso — volumen muscular</div>
-    <div style="font-size:12px;color:var(--text2);margin-top:3px;">3,000 kcal/día · entrenamiento + sueño consistente</div>
+  <!-- TODAY -->
+  <div class="g-card" id="goals-today-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span class="g-done-count" id="g-done-count">0</span>
+          <span style="font-size:13px;color:var(--text2);">/ <span id="g-total-count">0</span> goals</span>
+        </div>
+        <div class="g-seg-row" id="g-seg-row"></div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="g-status-label">goals completados</div>
+      </div>
+    </div>
+    <div id="goals-list"></div>
+    <div id="g-move-wrap" style="display:none;"><button class="g-move-btn" onclick="moveUncheckedToTomorrow()">Mover pendientes a mañana →</button></div>
+    <div class="g-qadd">
+      <input type="text" id="goal-input" placeholder="Agregar un goal para hoy..." onkeydown="if(event.key==='Enter')addGoalToday()"/>
+      <button class="g-polish-btn" onclick="addGoalPolish()">✨ Pulir</button>
+      <button class="g-add-btn" onclick="addGoalToday()">+ Agregar</button>
+    </div>
   </div>
-  <div class="card"><div class="card-title">Mis objetivos</div><div id="goals-list"></div>
-    <div class="add-row"><input type="text" id="goal-input" placeholder="Nuevo objetivo..."/><button onclick="addGoal()">+ Agregar</button></div>
+  <!-- PLAN MAÑANA -->
+  <div class="g-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="font-size:12px;font-weight:500;color:var(--text);">Plan mañana — <span id="g-tmr-date"></span></div>
+        <div style="font-size:11px;color:var(--text2);margin-top:3px;">Escribe esta noche, activo a las 6 AM</div>
+      </div>
+      <span class="badge badge-dev" id="g-tmr-badge">0 planificados</span>
+    </div>
+    <div id="goals-tomorrow-list"></div>
+    <div class="g-qadd">
+      <input type="text" id="goal-tmr-input" placeholder="Agregar goal para mañana..." onkeydown="if(event.key==='Enter')addGoalTomorrowFn()"/>
+      <button class="g-polish-btn" onclick="addGoalTomorrowPolish()">✨ Pulir</button>
+      <button class="g-add-btn" onclick="addGoalTomorrowFn()">+ Agregar</button>
+    </div>
   </div>
   <button class="btn-ghost" onclick="getAI('goals')" style="margin-bottom:10px;font-size:12px;">Calcular qué hacer hoy ↗</button>
   <div class="ai-box" id="ai-goals" style="display:none;"><div class="ai-title">Plan diario IA</div><div class="ai-output" id="ai-goals-text"></div></div>
@@ -376,7 +441,7 @@ function dateISO(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).p
 function dowISO(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();}
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};render();setTimeout(loadSummary,300);}
+function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));render();setTimeout(loadSummary,300);}
 function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
@@ -406,7 +471,7 @@ function renderStrip(){
 function buildCtx(){
   const tm=S.meals.filter(m=>m.date===today()),kcal=tm.reduce((a,m)=>a+m.kcal,0);
   const done=S.habits.filter(h=>h.log.includes(today())).map(h=>h.name).join(', ')||'ninguno';
-  return'Datos de Nico:\n- Objetivo: subir peso muscular, 3000 kcal/dia\n- Peso: '+(S.peso.length?S.peso[S.peso.length-1].kg+' kg':'sin registro')+'\n- Calorias hoy: '+kcal+'/3000\n- Habitos completados: '+done+'\n- Ultimo sueno: '+(S.sleep[0]?S.sleep[0].hours+'h, calidad '+S.sleep[0].qual+'/10':'sin registro')+'\n- Goals: '+S.goals.map(g=>g.text+' '+g.pct+'%').join(' | ')+'\n- Proyectos: OMEGA (bot BTC/USD Railway v5.7), GeoPulse (bot geopolitico FastAPI)\n- Trader Polymarket, especialidad geopolitica';
+  return'Datos de Nico:\n- Objetivo: subir peso muscular, 3000 kcal/dia\n- Peso: '+(S.peso.length?S.peso[S.peso.length-1].kg+' kg':'sin registro')+'\n- Calorias hoy: '+kcal+'/3000\n- Habitos completados: '+done+'\n- Ultimo sueno: '+(S.sleep[0]?S.sleep[0].hours+'h, calidad '+S.sleep[0].qual+'/10':'sin registro')+'\n- Goals: '+S.goals.map(g=>g.text+(g.done?' [hecho]':g.queue?' [cola]':'')).join(' | ')+'\n- Proyectos: OMEGA (bot BTC/USD Railway v5.7), GeoPulse (bot geopolitico FastAPI)\n- Trader Polymarket, especialidad geopolitica';
 }
 async function callAI(messages,max){
   const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||500,messages})});
@@ -573,11 +638,106 @@ function renderKcalChart(){
   const labels=last7.map(d=>{const pts=d.split('/');return new Date(pts[2],pts[1]-1,pts[0]).toLocaleDateString('es-CL',{day:'numeric',month:'short'});});
   CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=3000?'#6fcf8a':AC()),borderRadius:3},{data:Array(7).fill(3000),type:'line',borderColor:'#5a4535',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
 }
-function addGoal(){const t=document.getElementById('goal-input').value.trim();if(!t)return;S.goals.push({text:t,pct:0});document.getElementById('goal-input').value='';saveState();renderGoals();}
+const ANTHROPIC_API_KEY='';
+function getTomorrowISO(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
+function loadTmrGoals(){return lsGet('goals:'+getTomorrowISO())||[];}
+function saveTmrGoals(arr){lsSet('goals:'+getTomorrowISO(),arr);}
+function notifyGoals(){window.dispatchEvent(new CustomEvent('goals-changed'));}
+function saveGoals(){saveState();notifyGoals();}
+let goalsExpanded=false;
 function renderGoals(){
-  const el=document.getElementById('goals-list');if(!S.goals.length){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin objetivos.</p>';window.dispatchEvent(new CustomEvent('goals-changed'));return;}
-  el.innerHTML=S.goals.map((g,i)=>'<div class="goal-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><input value="'+g.text+'" style="font-size:13px;background:none;border:none;outline:none;font-family:var(--font);color:var(--text);flex:1;" onchange="S.goals['+i+'].text=this.value;saveState();"/><div style="display:flex;align-items:center;gap:6px;flex-shrink:0;"><input type="number" min="0" max="100" value="'+g.pct+'" style="width:42px;font-size:12px;" onchange="S.goals['+i+'].pct=Math.min(100,Math.max(0,parseInt(this.value)||0));saveState();renderGoals();"/><span style="font-size:11px;color:var(--text2);">%</span><button class="del-btn" onclick="S.goals.splice('+i+',1);saveState();renderGoals();">x</button></div></div><div class="progress-bar"><div class="progress-fill" style="width:'+g.pct+'%"></div></div></div>').join('');
-  window.dispatchEvent(new CustomEvent('goals-changed'));
+  S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));
+  const goals=S.goals,doneCount=goals.filter(g=>g.done).length,total=goals.length,allDone=total>0&&doneCount===total;
+  document.getElementById('g-done-count').textContent=doneCount;
+  document.getElementById('g-total-count').textContent=total;
+  document.getElementById('g-status-label').textContent=allDone?'todos listos — buen dia':'goals completados';
+  document.getElementById('goals-today-card').style.background=allDone?'rgba(107,227,164,.04)':'';
+  document.getElementById('g-seg-row').innerHTML=goals.map(g=>'<div class="g-seg'+(g.done?' filled':'')+'"></div>').join('');
+  document.getElementById('g-move-wrap').style.display=goals.some(g=>!g.done)?'block':'none';
+  const el=document.getElementById('goals-list');el.innerHTML='';
+  const vis=goalsExpanded?goals:goals.slice(0,5);
+  vis.forEach(g=>el.appendChild(makeGoalRow(g,goals.indexOf(g),false)));
+  let btn=document.getElementById('g-show-more');if(btn)btn.remove();
+  if(!goalsExpanded&&goals.length>5){const b=document.createElement('button');b.className='g-show-more';b.id='g-show-more';b.textContent='Ver '+(goals.length-5)+' más ▾';b.onclick=()=>{goalsExpanded=true;renderGoals();};el.after(b);}
+  else if(goalsExpanded&&goals.length>5){const b=document.createElement('button');b.className='g-show-more';b.id='g-show-more';b.textContent='Mostrar menos ▴';b.onclick=()=>{goalsExpanded=false;renderGoals();};el.after(b);}
+  renderTomorrowGoals();notifyGoals();
+}
+function makeGoalRow(g,i,isTmr){
+  const row=document.createElement('div');
+  row.className='g-row'+(g.done?' is-done':'')+(g.queue?' is-queue':'');
+  row.draggable=true;row.dataset.idx=i;
+  const drag=document.createElement('span');drag.className='g-drag';drag.textContent='⋮⋮';drag.title='Arrastrar';
+  const cb=document.createElement('div');
+  if(isTmr){cb.className='g-tomorrow-cb';cb.title='Activa a las 6 AM mañana';}
+  else{cb.className='g-cb'+(g.done?' checked':'');cb.textContent=g.done?'✓':'';cb.onclick=()=>toggleGoalDone(i);}
+  const txt=document.createElement('span');txt.className='g-text';txt.textContent=g.text;
+  if(!isTmr)txt.onclick=e=>startEditGoal(txt,i,e);
+  row.appendChild(drag);row.appendChild(cb);row.appendChild(txt);
+  if(!isTmr){const qb=document.createElement('button');qb.className='g-queue-btn'+(g.queue?' on':'');qb.textContent='⚡';qb.title='Cola';qb.onclick=()=>toggleGoalQueue(i);row.appendChild(qb);}
+  const del=document.createElement('button');del.className='g-del-btn';del.textContent='×';del.onclick=isTmr?()=>deleteTmrGoal(i):()=>deleteGoal(i);
+  row.appendChild(del);
+  const ns=isTmr?'tmr':'today';
+  row.addEventListener('dragstart',e=>{e.dataTransfer.setData(ns,i);row.style.opacity='.5';});
+  row.addEventListener('dragend',()=>{row.style.opacity='';document.querySelectorAll('.g-row.drag-over').forEach(r=>r.classList.remove('drag-over'));});
+  row.addEventListener('dragover',e=>{e.preventDefault();document.querySelectorAll('.g-row.drag-over').forEach(r=>r.classList.remove('drag-over'));row.classList.add('drag-over');});
+  row.addEventListener('dragleave',()=>row.classList.remove('drag-over'));
+  row.addEventListener('drop',e=>{
+    e.preventDefault();row.classList.remove('drag-over');
+    const from=parseInt(e.dataTransfer.getData(ns)),to=i;if(from===to||isNaN(from))return;
+    if(isTmr){const a=loadTmrGoals();a.splice(to,0,a.splice(from,1)[0]);saveTmrGoals(a);renderTomorrowGoals();}
+    else{S.goals.splice(to,0,S.goals.splice(from,1)[0]);saveGoals();renderGoals();}
+  });
+  return row;
+}
+function startEditGoal(el,i,e){
+  if(e)e.stopPropagation();el.contentEditable='true';el.focus();
+  const r=document.createRange();r.selectNodeContents(el);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+  const confirm=()=>{el.contentEditable='false';const t=el.textContent.trim();if(t){S.goals[i].text=t;saveGoals();}else el.textContent=S.goals[i].text;};
+  el.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();confirm();el.onblur=null;}if(ev.key==='Escape'){el.textContent=S.goals[i].text;el.contentEditable='false';el.onblur=null;}};
+  el.onblur=confirm;
+}
+function toggleGoalDone(i){
+  S.goals[i].done=!S.goals[i].done;if(S.goals[i].done)S.goals[i].queue=false;
+  const rows=document.querySelectorAll('#goals-list .g-row');
+  rows.forEach(r=>{if(parseInt(r.dataset.idx)===i){const cb=r.querySelector('.g-cb');if(cb){cb.classList.add('bounce');setTimeout(()=>cb.classList.remove('bounce'),400);}}});
+  saveGoals();renderGoals();
+}
+function toggleGoalQueue(i){S.goals[i].queue=!S.goals[i].queue;saveGoals();renderGoals();}
+function deleteGoal(i){S.goals.splice(i,1);saveGoals();renderGoals();}
+function addGoalToday(){
+  const inp=document.getElementById('goal-input'),t=inp.value.trim();if(!t)return;
+  S.goals.push({text:t,done:false,queue:false});inp.value='';saveGoals();renderGoals();
+}
+async function addGoalPolish(){
+  const inp=document.getElementById('goal-input'),raw=inp.value.trim();if(!raw)return;
+  inp.disabled=true;inp.value=await polishGoal(raw);inp.disabled=false;inp.focus();
+}
+async function polishGoal(rawText){
+  if(!ANTHROPIC_API_KEY)return rawText;
+  try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:200,messages:[{role:'user',content:'Reformula este goal como una tarea clara, específica y accionable. Devuelve SOLO el texto reformulado, sin explicaciones ni comillas: "'+rawText+'"'}]})});const d=await res.json();return d.content?.[0]?.text?.trim()||rawText;}catch(e){return rawText;}
+}
+function moveUncheckedToTomorrow(){
+  const pending=S.goals.filter(g=>!g.done);if(!pending.length)return;
+  if(!confirm('Mover '+pending.length+' goal(s) pendiente(s) a mañana?'))return;
+  const tmr=loadTmrGoals(),existing=new Set(tmr.map(g=>g.text));
+  pending.forEach(g=>{if(!existing.has(g.text))tmr.push({text:g.text,done:false,queue:false});});
+  saveTmrGoals(tmr);S.goals=S.goals.filter(g=>g.done);saveGoals();renderGoals();
+}
+function renderTomorrowGoals(){
+  const tmr=loadTmrGoals(),el=document.getElementById('goals-tomorrow-list');
+  const dt=new Date(getTomorrowISO()+'T12:00:00');
+  document.getElementById('g-tmr-date').textContent=dt.toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('g-tmr-badge').textContent=tmr.length+' planificados';
+  el.innerHTML='';tmr.forEach((g,i)=>el.appendChild(makeGoalRow(g,i,true)));
+}
+function deleteTmrGoal(i){const a=loadTmrGoals();a.splice(i,1);saveTmrGoals(a);renderTomorrowGoals();}
+function addGoalTomorrowFn(){
+  const inp=document.getElementById('goal-tmr-input'),t=inp.value.trim();if(!t)return;
+  const a=loadTmrGoals();a.push({text:t,done:false,queue:false});saveTmrGoals(a);inp.value='';renderTomorrowGoals();
+}
+async function addGoalTomorrowPolish(){
+  const inp=document.getElementById('goal-tmr-input'),raw=inp.value.trim();if(!raw)return;
+  inp.disabled=true;inp.value=await polishGoal(raw);inp.disabled=false;inp.focus();
 }
 function addTodo(){const t=document.getElementById('todo-input').value.trim();if(!t)return;S.todos.push({text:t,done:false,date:today()});document.getElementById('todo-input').value='';saveState();renderTodos();}
 function renderTodos(){
@@ -598,7 +758,7 @@ async function getAI(section){
 function emojiIcon(e){return "";}
 /* ── GOAL TICKER ── */
 let tickerIdx=0,tickerTimer=null;
-function readTickerGoals(){return S.goals.map(g=>({text:g.text,done:g.pct>=100}));}
+function readTickerGoals(){return S.goals.map(g=>({text:g.text,done:g.done===true}));}
 function updateTicker(){
   const goals=readTickerGoals(),total=goals.length;
   const doneCount=goals.filter(g=>g.done).length,pending=goals.filter(g=>!g.done);
