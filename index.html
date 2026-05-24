@@ -209,7 +209,7 @@ canvas{width:100%!important;display:block;}
   <div class="card"><div class="card-title">Hábitos diarios</div><div id="habits-list"></div>
     <div class="add-row"><input type="text" id="habit-input" placeholder="Nuevo hábito..." onkeydown="if(event.key==='Enter')addHabit()"/><button onclick="addHabit()">+ Agregar</button></div>
   </div>
-  <div class="card" id="habits-chart-card" style="display:none;"><div class="card-title">Últimos 14 días</div><canvas id="habits-chart" height="140"></canvas></div>
+  <div class="card" id="habits-chart-card" style="display:none;"></div>
 </div>
 <!-- PESO -->
 <div class="section" id="section-peso">
@@ -389,10 +389,28 @@ function renderHabits(){
   }).join('');
 }
 function renderHabitsChart(){
-  const card=document.getElementById('habits-chart-card');if(!S.habits.length){card.style.display='none';return;}card.style.display='block';
-  const last14=[];for(let d=13;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last14.push({str:dt.toLocaleDateString('es-CL'),label:dt.toLocaleDateString('es-CL',{day:'numeric',month:'short'})});}
-  if(CHARTS.habits)CHARTS.habits.destroy();
-  CHARTS.habits=new Chart(document.getElementById('habits-chart').getContext('2d'),{type:'bar',data:{labels:last14.map(d=>d.label),datasets:[{data:last14.map(d=>S.habits.filter(h=>h.log.includes(d.str)).length),backgroundColor:AC(),borderRadius:3}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:S.habits.length,ticks:{stepSize:1,color:T2()},grid:{color:BD()}},x:{ticks:{color:T2(),maxRotation:45},grid:{display:false}}}}});
+  const card=document.getElementById('habits-chart-card');
+  if(!S.habits.length){card.style.display='none';return;}
+  card.style.display='block';
+  const DOW=['D','L','M','X','J','V','S'];
+  const last7=[];
+  for(let d=6;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last7.push({str:dt.toLocaleDateString('es-CL'),dow:DOW[dt.getDay()]});}
+  const R=28,C=+(2*Math.PI*R).toFixed(1);
+  const rings=S.habits.map(h=>{
+    const done=last7.filter(d=>h.log.includes(d.str)).length;
+    const pct=Math.round(done/7*100);
+    const offset=+(C*(1-pct/100)).toFixed(1);
+    const nm=h.name.length>11?h.name.slice(0,11)+'…':h.name;
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:72px;"><svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="${R}" fill="none" stroke="var(--bg4)" stroke-width="5"/><circle cx="36" cy="36" r="${R}" fill="none" stroke="#d44060" stroke-width="5" stroke-dasharray="${C}" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="13" fill="var(--text)" font-family="-apple-system,sans-serif">${pct}%</text></svg><span style="font-size:10px;color:var(--text2);text-align:center;letter-spacing:.04em;text-transform:uppercase;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span></div>`;
+  }).join('');
+  const barsHTML=S.habits.map(h=>{
+    const done=last7.filter(d=>h.log.includes(d.str)).length;
+    const pct=Math.round(done/7*100);
+    const nm=h.name.length>14?h.name.slice(0,14)+'…':h.name;
+    const cols=last7.map(d=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="width:14px;height:30px;border-radius:3px;background:${h.log.includes(d.str)?'#d44060':'var(--bg4)'};"></div><span style="font-size:9px;color:var(--text3);">${d.dow}</span></div>`).join('');
+    return`<div style="display:flex;align-items:flex-end;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);"><span style="font-size:11px;color:var(--text2);width:75px;flex-shrink:0;padding-bottom:17px;">${nm}</span><div style="display:flex;gap:4px;">${cols}</div><span style="font-size:12px;color:#d44060;margin-left:auto;padding-bottom:17px;font-weight:500;">${pct}%</span></div>`;
+  }).join('');
+  card.innerHTML=`<div class="card-title">Consistencia — últimos 7 días</div><div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-around;padding:12px 0 16px;">${rings}</div><div style="border-top:0.5px solid var(--border);padding-top:10px;">${barsHTML}</div>`;
 }
 function savePeso(){const kg=parseFloat(document.getElementById('peso-input').value);if(!kg||kg<30||kg>200)return;S.peso.push({date:today(),kg});document.getElementById('peso-input').value='';saveState();renderStrip();renderPesoChart();}
 function renderPesoChart(){
