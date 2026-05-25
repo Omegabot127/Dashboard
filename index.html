@@ -209,6 +209,8 @@ canvas{width:100%!important;display:block;}
 .g-polish-btn:hover{color:var(--text);opacity:1;}
 .g-add-btn{background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--font);}
 .g-add-btn:hover{opacity:.85;}
+/* SIDEBAR STREAK */
+.sidebar-streak{display:flex;align-items:center;gap:5px;margin-bottom:1rem;}
 </style>
 </head>
 <body>
@@ -218,6 +220,7 @@ canvas{width:100%!important;display:block;}
 <div class="app-sidebar">
   <div class="logo">Nico</div>
   <div class="date-str" id="today-date"></div>
+  <div class="sidebar-streak" id="sidebar-streak" style="display:none;"></div>
   <button class="nav-btn active" onclick="switchTab('inicio',this)">Inicio</button>
   <button class="nav-btn" onclick="switchTab('habitos',this)">Hábitos</button>
   <button class="nav-btn" onclick="switchTab('peso',this)">Peso</button>
@@ -437,11 +440,13 @@ const ROUTINE={1:{label:'Lunes',type:'Upper Body',emoji:'upper',exercises:[{name
 function isTD(d){return ROUTINE[d]&&ROUTINE[d].exercises.length>0;}
 function today(){return new Date().toLocaleDateString('es-CL');}
 function todayISO(){return new Date().toISOString().split('T')[0];}
+function getActiveDateString(){const now=new Date();if(now.getHours()<6){const y=new Date(now);y.setDate(now.getDate()-1);return y.toISOString().split('T')[0];}return now.toISOString().split('T')[0];}
+function getTomorrowDateString(){const now=new Date();if(now.getHours()<6)return now.toISOString().split('T')[0];const t=new Date(now);t.setDate(now.getDate()+1);return t.toISOString().split('T')[0];}
 function dateISO(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
 function dowISO(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();}
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));render();setTimeout(loadSummary,300);}
+function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));rolloverGoals();processGoalStreak();render();setTimeout(loadSummary,300);}
 function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
@@ -639,11 +644,51 @@ function renderKcalChart(){
   CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=3000?'#6fcf8a':AC()),borderRadius:3},{data:Array(7).fill(3000),type:'line',borderColor:'#5a4535',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
 }
 const ANTHROPIC_API_KEY='';
-function getTomorrowISO(){const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().split('T')[0];}
+function getTomorrowISO(){return getTomorrowDateString();}
 function loadTmrGoals(){return lsGet('goals:'+getTomorrowISO())||[];}
 function saveTmrGoals(arr){lsSet('goals:'+getTomorrowISO(),arr);}
 function notifyGoals(){window.dispatchEvent(new CustomEvent('goals-changed'));}
 function saveGoals(){saveState();notifyGoals();}
+/* ── ROLLOVER: mueve goals pendientes de días anteriores a hoy ── */
+function rolloverGoals(){
+  const active=getActiveDateString();
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^goals:\d{4}-\d{2}-\d{2}$/.test(k)&&k.slice(6)<active)keys.push(k);}
+  if(!keys.length)return;
+  const existing=new Set(S.goals.map(g=>g.text));
+  keys.forEach(k=>{
+    const old=lsGet(k)||[];
+    old.filter(g=>!g.done&&g.text).forEach(g=>{if(!existing.has(g.text)){S.goals.push({text:g.text,done:false,queue:g.queue||false});existing.add(g.text);}});
+    localStorage.removeItem(k);
+  });
+  saveState();
+}
+/* ── RACHA DE GOALS ── */
+function processGoalStreak(){
+  const active=getActiveDateString();
+  let data=lsGet('goal_streak_v1')||{count:0,lastProcessedDate:null};
+  const fromDate=data.lastProcessedDate||'0000-00-00';
+  // recoger keys goals: anteriores a hoy y posteriores a lastProcessedDate
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^goals:\d{4}-\d{2}-\d{2}$/.test(k)){const d=k.slice(6);if(d<active&&d>fromDate)keys.push(k);}}
+  keys.sort();
+  keys.forEach(k=>{
+    const dayGoals=lsGet(k)||[];
+    if(!dayGoals.length)return; // sin goals ese día → no rompe racha
+    if(dayGoals.every(g=>g.done))data.count++;
+    else data.count=0;
+  });
+  data.lastProcessedDate=active;
+  lsSet('goal_streak_v1',data);
+  renderStreak(data.count);
+}
+function renderStreak(count){
+  const el=document.getElementById('sidebar-streak');if(!el)return;
+  if(count<1){el.style.display='none';return;}
+  el.style.display='flex';
+  const isHot=count>=3;
+  el.innerHTML='<span style="font-size:13px;">'+(isHot?'🔥':'⚡')+'</span><span style="font-size:11px;color:'+(isHot?'var(--accent)':'var(--text2)')+';">'+count+' día'+(count!==1?'s':'')+' seguido'+(count!==1?'s':'')+'</span>';
+}
 let goalsExpanded=false;
 function renderGoals(){
   S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));
