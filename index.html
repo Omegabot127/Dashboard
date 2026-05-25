@@ -492,11 +492,40 @@ canvas{width:100%!important;display:block;}
       <div id="sleep-rec-time" style="font-size:40px;font-weight:300;color:var(--text);font-family:'Courier New',monospace;line-height:1;margin-bottom:6px;">23:00</div>
       <div id="sleep-rec-label" style="font-size:12px;color:var(--text2);">Sin historial aún — hora sugerida</div>
     </div>
-    <div class="card">
-      <div class="card-title">Últimas sesiones</div>
-      <div id="sleep-sessions-list"><p style="font-size:12px;color:var(--text3);padding:4px 0;">Sin sesiones registradas.</p></div>
-    </div>
     <button onclick="startSleep()" style="width:100%;padding:18px;font-size:16px;font-weight:500;background:var(--accent);color:var(--bg);border:none;border-radius:10px;cursor:pointer;font-family:var(--font);letter-spacing:.03em;margin-bottom:10px;">🌙 Ir a dormir</button>
+    <!-- STATS 2x2 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">Promedio 7 días</div>
+        <div id="sl-avg-val" style="font-size:28px;font-weight:300;font-family:'Courier New',monospace;line-height:1;margin-bottom:3px;color:var(--text);">—</div>
+        <div id="sl-avg-sub" style="font-size:11px;color:var(--text3);">horas por noche</div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">Deuda de sueño</div>
+        <div id="sl-debt-val" style="font-size:28px;font-weight:300;font-family:'Courier New',monospace;line-height:1;margin-bottom:3px;color:var(--text);">—</div>
+        <div id="sl-debt-sub" style="font-size:11px;color:var(--text3);">vs objetivo 8h/noche</div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">Consistencia</div>
+        <div id="sl-cons-val" style="font-size:28px;font-weight:300;font-family:'Courier New',monospace;line-height:1;margin-bottom:3px;color:var(--text);">—</div>
+        <div id="sl-cons-sub" style="font-size:11px;color:var(--text3);">horario ±30 min</div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">Mejor racha</div>
+        <div id="sl-streak-val" style="font-size:28px;font-weight:300;font-family:'Courier New',monospace;line-height:1;margin-bottom:3px;color:var(--text);">—</div>
+        <div id="sl-streak-sub" style="font-size:11px;color:var(--text3);">noches ≥ 8h seguidas</div>
+      </div>
+    </div>
+    <!-- GRÁFICO DUAL -->
+    <div class="card" id="sleep-dual-chart-card">
+      <div class="card-title">Sueño — últimas 14 noches</div>
+      <canvas id="sleep-dual-chart" height="160"></canvas>
+    </div>
+    <!-- HISTORIAL MEJORADO -->
+    <div class="card">
+      <div class="card-title">Historial reciente</div>
+      <div id="sleep-sessions-list"></div>
+    </div>
     <div class="card" id="sleep-chart-card" style="display:none;"><div class="card-title">Horas de sueño — 14 días</div><canvas id="sleep-chart" height="140"></canvas></div>
     <div class="ai-box" id="ai-sleep" style="display:none;"><div class="ai-title">Análisis IA</div><div class="ai-output" id="ai-sleep-text"></div></div>
   </div>
@@ -889,7 +918,7 @@ function wakeUp(quality){
   if(S.sleep.length>30)S.sleep=S.sleep.slice(0,30);
   saveState();
   if(sleepElapsedTimer){clearInterval(sleepElapsedTimer);sleepElapsedTimer=null;}
-  renderSleepScreen();renderStrip();
+  renderSleepScreen();renderSleepStats();renderStrip();
 }
 function updateSleepElapsed(){
   const st=getSleepState();if(st.status!=='sleeping'||!st.sleepStart)return;
@@ -926,23 +955,129 @@ function renderSleepScreen(){
     const sessions=getSleepSessions();
     const recLabel=document.getElementById('sleep-rec-label');
     if(recLabel)recLabel.textContent=sessions.length?'Promedio de tus últimas '+Math.min(sessions.length,7)+' sesiones':'Sin historial aún — hora sugerida';
+    renderSleepStats();
     renderSleepSessionsList();
+    renderSleepDualChart();
     renderSleepChart();
   }
 }
+function deleteSleepSession(idx){
+  const sessions=getSleepSessions();sessions.splice(idx,1);saveSleepSessions(sessions);
+  renderSleepSessionsList();renderSleepStats();renderSleepDualChart();
+}
 function renderSleepSessionsList(){
   const el=document.getElementById('sleep-sessions-list');if(!el)return;
-  const sessions=getSleepSessions().slice(0,5);
-  if(!sessions.length){el.innerHTML='<p style="font-size:12px;color:var(--text3);padding:4px 0;">Sin sesiones registradas.</p>';return;}
+  const sessions=getSleepSessions().slice(0,7);
+  if(!sessions.length){el.innerHTML='<p style="font-size:13px;color:var(--text3);padding:8px 0;">Sin sesiones registradas aún.</p>';return;}
   const qEmojis=['','😴','😑','😊','😄','🚀'];
-  el.innerHTML=sessions.map(s=>{
+  const DAYS_ES_FULL=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  el.innerHTML=sessions.map((s,idx)=>{
     const hF=Math.floor(s.hours),mF=Math.round((s.hours-hF)*60);
     const sD=new Date(s.sleepStart),wD=new Date(s.wakeTime);
+    const dow=DAYS_ES_FULL[sD.getDay()];
+    const dayNum=sD.getDate();
     const sStr=String(sD.getHours()).padStart(2,'0')+':'+String(sD.getMinutes()).padStart(2,'0');
     const wStr=String(wD.getHours()).padStart(2,'0')+':'+String(wD.getMinutes()).padStart(2,'0');
     const qColor=s.quality>=4?'var(--green)':s.quality>=3?'var(--text2)':'var(--red)';
-    return'<div class="list-item"><span style="font-size:11px;color:var(--text3);min-width:100px;">'+sStr+' → '+wStr+'</span><span style="flex:1;font-size:13px;color:var(--text);">'+hF+'h '+mF+'m</span><span style="font-size:20px;line-height:1;margin-right:6px;">'+qEmojis[s.quality]+'</span><span style="font-size:11px;color:'+qColor+';min-width:58px;text-align:right;">'+s.qualityLabel+'</span></div>';
+    return`<div class="sleep-hist-row" style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.025);border-radius:10px;padding:10px 14px;margin-bottom:6px;position:relative;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;color:var(--text);font-family:'Courier New',monospace;">${dow} ${dayNum} &nbsp;·&nbsp; ${sStr} → ${wStr} &nbsp;·&nbsp; ${hF}h ${mF}m &nbsp;·&nbsp; ${qEmojis[s.quality]||''}</div>
+        <div style="font-size:10px;color:${qColor};margin-top:3px;letter-spacing:.04em;">${s.qualityLabel||''}</div>
+      </div>
+      <button class="sleep-del-btn" onclick="deleteSleepSession(${idx})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;opacity:0;padding:2px 4px;transition:opacity .15s;flex-shrink:0;" onmouseover="this.style.color='var(--red)';this.style.opacity='1'" onmouseout="this.style.color='var(--text3)';this.style.opacity='0'">×</button>
+    </div>`;
   }).join('');
+  // show del buttons on hover via parent hover
+  el.querySelectorAll('.sleep-hist-row').forEach(row=>{
+    const btn=row.querySelector('.sleep-del-btn');
+    row.addEventListener('mouseenter',()=>{if(btn)btn.style.opacity='0.5';});
+    row.addEventListener('mouseleave',()=>{if(btn)btn.style.opacity='0';});
+  });
+}
+function renderSleepStats(){
+  const sessions=getSleepSessions();
+  // --- Promedio 7d ---
+  const last7=sessions.slice(0,7);
+  const avgEl=document.getElementById('sl-avg-val'),avgSub=document.getElementById('sl-avg-sub');
+  if(last7.length){
+    const avg=last7.reduce((a,s)=>a+s.hours,0)/last7.length;
+    const hF=Math.floor(avg),mF=Math.round((avg-hF)*60);
+    const avgColor=avg>=7?'var(--green)':avg>=6?'#F2C063':'var(--red)';
+    if(avgEl){avgEl.textContent=hF+'h '+String(mF).padStart(2,'0')+'m';avgEl.style.color=avgColor;}
+    if(avgSub)avgSub.textContent=last7.length+' noches analizadas';
+  } else {
+    if(avgEl){avgEl.textContent='—';avgEl.style.color='var(--text)';}
+    if(avgSub)avgSub.textContent='sin datos';
+  }
+  // --- Deuda de sueño (últimos 7d, objetivo 8h) ---
+  const debtEl=document.getElementById('sl-debt-val'),debtSub=document.getElementById('sl-debt-sub');
+  if(last7.length){
+    const totalDebt=last7.reduce((a,s)=>a+(Math.max(0,8-s.hours)),0);
+    const hD=Math.floor(totalDebt),mD=Math.round((totalDebt-hD)*60);
+    const debtColor=totalDebt>3?'var(--red)':totalDebt===0?'var(--green)':'#F2C063';
+    if(debtEl){debtEl.textContent=hD>0||mD>0?hD+'h '+String(mD).padStart(2,'0')+'m':'0h';debtEl.style.color=debtColor;}
+    if(debtSub)debtSub.textContent=totalDebt===0?'¡Al día esta semana!':'acumuladas esta semana';
+  } else {
+    if(debtEl){debtEl.textContent='—';debtEl.style.color='var(--text)';}
+    if(debtSub)debtSub.textContent='vs objetivo 8h/noche';
+  }
+  // --- Consistency ---
+  const consEl=document.getElementById('sl-cons-val'),consSub=document.getElementById('sl-cons-sub');
+  if(sessions.length>=3){
+    const avgMins=sessions.slice(0,14).reduce((a,s)=>{const d=new Date(s.sleepStart);let m=d.getHours()*60+d.getMinutes();if(d.getHours()<6)m+=1440;return a+m;},0)/Math.min(sessions.length,14);
+    const consistent=sessions.slice(0,14).filter(s=>{const d=new Date(s.sleepStart);let m=d.getHours()*60+d.getMinutes();if(d.getHours()<6)m+=1440;return Math.abs(m-avgMins)<=30;}).length;
+    const pct=Math.round(consistent/Math.min(sessions.length,14)*100);
+    const consColor=pct>=80?'var(--green)':pct>=60?'#F2C063':'var(--red)';
+    if(consEl){consEl.textContent=pct+'%';consEl.style.color=consColor;}
+    if(consSub)consSub.textContent='de '+Math.min(sessions.length,14)+' noches evaluadas';
+  } else {
+    if(consEl){consEl.textContent='—';consEl.style.color='var(--text)';}
+    if(consSub)consSub.textContent='necesitas 3+ sesiones';
+  }
+  // --- Mejor racha ≥8h ---
+  const strkEl=document.getElementById('sl-streak-val'),strkSub=document.getElementById('sl-streak-sub');
+  if(sessions.length){
+    let best=0,cur=0;
+    [...sessions].reverse().forEach(s=>{if(s.hours>=8){cur++;best=Math.max(best,cur);}else cur=0;});
+    const strkColor=best>=5?'var(--green)':best>=3?'#F2C063':'var(--text2)';
+    if(strkEl){strkEl.textContent=best+(best===1?' noche':' noches');strkEl.style.color=strkColor;}
+    if(strkSub)strkSub.textContent='días consecutivos ≥ 8h';
+  } else {
+    if(strkEl){strkEl.textContent='—';strkEl.style.color='var(--text)';}
+  }
+}
+function renderSleepDualChart(){
+  const sessions=getSleepSessions();
+  const card=document.getElementById('sleep-dual-chart-card');
+  if(!card)return;
+  const last14=[...sessions].slice(0,14).reverse();
+  if(!last14.length){card.style.display='none';return;}
+  card.style.display='block';
+  const DAYS_ES_SHORT=['Do','Lu','Ma','Mi','Ju','Vi','Sa'];
+  const labels=last14.map(s=>{const d=new Date(s.sleepStart);return DAYS_ES_SHORT[d.getDay()]+' '+d.getDate();});
+  const hoursData=last14.map(s=>+s.hours.toFixed(2));
+  const qualityData=last14.map(s=>s.quality||0);
+  const barColors=last14.map(s=>s.quality>=4?'rgba(111,207,138,0.7)':s.quality===3?'rgba(242,192,99,0.7)':'rgba(224,112,112,0.7)');
+  if(CHARTS.sleepDual)CHARTS.sleepDual.destroy();
+  const ctx=document.getElementById('sleep-dual-chart');if(!ctx)return;
+  CHARTS.sleepDual=new Chart(ctx.getContext('2d'),{
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:'Horas',data:hoursData,backgroundColor:barColors,borderRadius:4,yAxisID:'yHours',order:2},
+        {type:'line',label:'Objetivo',data:Array(last14.length).fill(8),borderColor:'rgba(90,53,72,0.8)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,yAxisID:'yHours',order:3},
+        {type:'line',label:'Calidad',data:qualityData,borderColor:'var(--accent)',backgroundColor:'rgba(212,64,96,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:'var(--accent)',tension:.35,fill:false,yAxisID:'yQuality',order:1}
+      ]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      interaction:{mode:'index',intersect:false},
+      scales:{
+        yHours:{type:'linear',position:'left',min:0,max:12,ticks:{color:'#5a3548',callback:v=>v+'h',font:{family:'\'Courier New\',monospace',size:10}},grid:{color:'rgba(42,20,24,0.8)'}},
+        yQuality:{type:'linear',position:'right',min:0,max:5,ticks:{color:'#5a3548',stepSize:1,callback:v=>v?v+'★':'',font:{family:'\'Courier New\',monospace',size:10}},grid:{display:false}}
+      }
+    }
+  });
 }
 function addMeal(){
   const name=document.getElementById('meal-name').value.trim(),kcal=parseInt(document.getElementById('meal-kcal').value)||0;if(!name||!kcal)return;
