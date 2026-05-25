@@ -340,16 +340,38 @@ canvas{width:100%!important;display:block;}
     </div>
   </div>
   <div class="card" id="habits-chart-card" style="display:none;"></div>
-</div>
-<!-- PESO -->
-<div class="section" id="section-peso">
-  <div class="card"><div class="card-title">Registrar peso</div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <input type="number" id="peso-input" placeholder="kg" min="40" max="150" step="0.1" style="font-size:22px;font-weight:400;width:110px;"/>
-      <span style="font-size:14px;color:var(--text2);">kg</span><button onclick="savePeso()">Guardar ↗</button>
+  <!-- SUPLEMENTOS (fusionado) -->
+  <div class="card" id="supp-today-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:28px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;" id="supp-done-count">0</span>
+          <span style="font-size:13px;color:var(--text2);">/ <span id="supp-total-count">0</span> tomados hoy</span>
+        </div>
+        <div class="g-seg-row" id="supp-seg-row"></div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="supp-status-label">tomados hoy</div>
+      </div>
+    </div>
+    <div id="supp-list"></div>
+    <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:8px;">
+      <button class="btn-ghost" onclick="showSuppForm()" id="supp-add-btn" style="font-size:12px;width:100%;">+ Agregar suplemento</button>
+      <div id="supp-form" style="display:none;margin-top:8px;">
+        <div style="display:grid;grid-template-columns:1fr 80px 130px;gap:6px;margin-bottom:8px;">
+          <input type="text" id="supp-form-name" placeholder="Nombre" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+          <input type="text" id="supp-form-dose" placeholder="Dosis" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+          <input type="text" id="supp-form-timing" placeholder="Hora (ej: Noche)" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveNewSupp()">+ Guardar</button>
+          <button class="btn-ghost" onclick="hideSuppForm()">Cancelar</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="card" id="peso-chart-card" style="display:none;"><div class="card-title">Curva — último mes</div><canvas id="peso-chart" height="180"></canvas><div style="display:flex;gap:16px;margin-top:12px;" id="peso-stats"></div></div>
+  <div class="card">
+    <div class="card-title">Adherencia — últimos 7 días</div>
+    <div id="supp-grid"></div>
+  </div>
 </div>
 <!-- WORKOUT -->
 <div class="section" id="section-workout">
@@ -544,40 +566,6 @@ canvas{width:100%!important;display:block;}
   </div>
   <button class="btn-ghost" onclick="getAI('goals')" style="margin-bottom:10px;font-size:12px;">Calcular qué hacer hoy ↗</button>
   <div class="ai-box" id="ai-goals" style="display:none;"><div class="ai-title">Plan diario IA</div><div class="ai-output" id="ai-goals-text"></div></div>
-</div>
-<!-- SUPLEMENTOS -->
-<div class="section" id="section-suplementos">
-  <div class="card" id="supp-today-card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
-      <div>
-        <div style="display:flex;align-items:baseline;gap:6px;">
-          <span style="font-size:28px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;" id="supp-done-count">0</span>
-          <span style="font-size:13px;color:var(--text2);">/ <span id="supp-total-count">0</span> tomados hoy</span>
-        </div>
-        <div class="g-seg-row" id="supp-seg-row"></div>
-        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="supp-status-label">tomados hoy</div>
-      </div>
-    </div>
-    <div id="supp-list"></div>
-    <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:8px;">
-      <button class="btn-ghost" onclick="showSuppForm()" id="supp-add-btn" style="font-size:12px;width:100%;">+ Agregar suplemento</button>
-      <div id="supp-form" style="display:none;margin-top:8px;">
-        <div style="display:grid;grid-template-columns:1fr 80px 130px;gap:6px;margin-bottom:8px;">
-          <input type="text" id="supp-form-name" placeholder="Nombre" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-          <input type="text" id="supp-form-dose" placeholder="Dosis" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-          <input type="text" id="supp-form-timing" placeholder="Hora (ej: Noche)" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="saveNewSupp()">+ Guardar</button>
-          <button class="btn-ghost" onclick="hideSuppForm()">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Adherencia — últimos 7 días</div>
-    <div id="supp-grid"></div>
-  </div>
 </div>
 <!-- TO-DO -->
 <div class="section" id="section-todos">
