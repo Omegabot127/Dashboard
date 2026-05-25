@@ -388,7 +388,7 @@ canvas{width:100%!important;display:block;}
     <div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;">
       <div style="position:relative;width:130px;height:130px;flex-shrink:0;">
         <svg width="130" height="130" viewBox="0 0 130 130">
-          <circle cx="65" cy="65" r="54" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+          <circle cx="65" cy="65" r="54" fill="none" stroke="#7DD3FC" stroke-opacity="0.15" stroke-width="8"/>
           <circle id="water-ring" cx="65" cy="65" r="54" fill="none" stroke="#7DD3FC" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" transform="rotate(-90 65 65)"/>
         </svg>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;">
@@ -413,11 +413,11 @@ canvas{width:100%!important;display:block;}
       <div class="add-row"><input type="number" id="water-custom-input" placeholder="Cantidad en ml..." min="1" max="3000" onkeydown="if(event.key==='Enter')addCustomWater()"/><button onclick="addCustomWater()">+ Agregar</button></div>
     </div>
   </div>
-  <div class="card" id="water-history-card" style="display:none;">
+  <div class="card" id="water-history-card">
     <div class="card-title">Registros de hoy</div>
-    <div id="water-history-list"></div>
+    <div id="water-history-list"><p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin registros hoy.</p></div>
   </div>
-  <div class="card" id="water-chart-card" style="display:none;">
+  <div class="card" id="water-chart-card">
     <div class="card-title">Vasos — últimos 7 días</div>
     <canvas id="water-chart" height="140"></canvas>
   </div>
@@ -895,13 +895,14 @@ function renderWater(){
   const rem=document.getElementById('water-remaining');
   if(rem){const r=WATER_GOAL_ML-totalMl;if(r>0){rem.textContent='Faltan '+r+' ml';rem.style.color='var(--text2)';}else{rem.textContent='Superado en '+Math.abs(r)+' ml';rem.style.color='var(--green)';}}
   const gm=document.getElementById('water-goal-msg');if(gm)gm.style.display=reached?'block':'none';
-  const hc=document.getElementById('water-history-card'),hl=document.getElementById('water-history-list');
-  if(hc&&hl){
+  const hl=document.getElementById('water-history-list');
+  if(hl){
     if(entries.length){
-      hc.style.display='block';
       const date=getActiveDateString();
       hl.innerHTML=[...entries].reverse().map((e,ri)=>{const idx=entries.length-1-ri;return'<div class="list-item"><span style="font-size:12px;color:var(--text3);min-width:48px;">'+e.time+'</span><span style="flex:1;font-size:13px;color:var(--text);">'+e.ml+' ml</span><button class="del-btn" onclick="deleteWaterEntry(\''+date+'\','+idx+')">×</button></div>';}).join('');
-    }else hc.style.display='none';
+    }else{
+      hl.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin registros hoy.</p>';
+    }
   }
 }
 function renderWaterChart(){
@@ -910,7 +911,7 @@ function renderWaterChart(){
   for(let d=6;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last7.push(dt.toISOString().split('T')[0]);}
   const vals=last7.map(date=>{const e=log[date]||[];return+(e.reduce((a,x)=>a+x.ml,0)/200).toFixed(1);});
   const card=document.getElementById('water-chart-card');if(!card)return;
-  if(!vals.some(v=>v>0)){card.style.display='none';return;}card.style.display='block';
+  card.style.display='block';
   const labels=last7.map(date=>{const[y,m,d]=date.split('-');return new Date(y,m-1,d).toLocaleDateString('es-CL',{day:'numeric',month:'short'});});
   if(CHARTS.water)CHARTS.water.destroy();
   CHARTS.water=new Chart(document.getElementById('water-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=8?'#6fcf8a':'#7DD3FC88'),borderRadius:3},{data:Array(7).fill(8),type:'line',borderColor:'#5a4535',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2(),callback:v=>v+'v'},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
