@@ -211,6 +211,25 @@ canvas{width:100%!important;display:block;}
 .g-add-btn:hover{opacity:.85;}
 /* SIDEBAR STREAK */
 .sidebar-streak{display:flex;align-items:center;gap:5px;margin-bottom:1rem;}
+/* SUPPLEMENTS */
+.supp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.06);margin-bottom:6px;transition:background .15s;}
+.supp-row:hover{background:rgba(255,255,255,0.055);}
+.supp-row.is-done{opacity:.52;background:rgba(107,227,164,0.06)!important;}
+.supp-cb{width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.18);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0;user-select:none;}
+.supp-cb.checked{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(107,227,164,.4);font-size:11px;color:#0d2015;font-weight:700;}
+.supp-name{flex:1;font-size:13px;color:var(--text);outline:none;cursor:text;min-width:0;}
+.supp-dose{font-size:11px;color:var(--text2);margin-right:4px;outline:none;cursor:text;white-space:nowrap;}
+.supp-timing{font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,0.06);color:var(--text2);white-space:nowrap;flex-shrink:0;}
+.supp-del{background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);opacity:0;padding:2px 4px;transition:opacity .15s;flex-shrink:0;}
+.supp-row:hover .supp-del{opacity:.5;}
+.supp-del:hover{opacity:1!important;color:var(--red);}
+.supp-grid-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.supp-grid-row:last-child{border-bottom:none;}
+.supp-grid-name{font-size:11px;color:var(--text2);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.supp-grid-dots{display:flex;gap:4px;flex:1;}
+.supp-dot{width:10px;height:10px;border-radius:50%;background:var(--bg4);}
+.supp-dot.done{background:var(--green);}
+.supp-adh{font-size:11px;color:var(--text2);min-width:34px;text-align:right;font-family:'Courier New',monospace;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(10,10,11,0) 0%,rgba(10,10,11,0.94) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
 .btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:460px;}
@@ -236,6 +255,7 @@ canvas{width:100%!important;display:block;}
   <button class="nav-btn" onclick="switchTab('comidas',this)">Comidas</button>
   <button class="nav-btn" onclick="switchTab('agua',this)">Agua</button>
   <button class="nav-btn" onclick="switchTab('goals',this)">Goals</button>
+  <button class="nav-btn" onclick="switchTab('suplementos',this)">Suplementos</button>
   <button class="nav-btn" onclick="switchTab('todos',this)">To-do</button>
   <button class="nav-btn" onclick="switchTab('projects',this)">Proyectos</button>
 </div>
@@ -249,6 +269,7 @@ canvas{width:100%!important;display:block;}
   <button class="tab" onclick="switchTab('comidas',this)">Comidas</button>
   <button class="tab" onclick="switchTab('agua',this)">Agua</button>
   <button class="tab" onclick="switchTab('goals',this)">Goals</button>
+  <button class="tab" onclick="switchTab('suplementos',this)">Suplementos</button>
   <button class="tab" onclick="switchTab('todos',this)">To-do</button>
   <button class="tab" onclick="switchTab('projects',this)">Proyectos</button>
 </div>
@@ -463,6 +484,40 @@ canvas{width:100%!important;display:block;}
   <button class="btn-ghost" onclick="getAI('goals')" style="margin-bottom:10px;font-size:12px;">Calcular qué hacer hoy ↗</button>
   <div class="ai-box" id="ai-goals" style="display:none;"><div class="ai-title">Plan diario IA</div><div class="ai-output" id="ai-goals-text"></div></div>
 </div>
+<!-- SUPLEMENTOS -->
+<div class="section" id="section-suplementos">
+  <div class="card" id="supp-today-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+      <div>
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:28px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;" id="supp-done-count">0</span>
+          <span style="font-size:13px;color:var(--text2);">/ <span id="supp-total-count">0</span> tomados hoy</span>
+        </div>
+        <div class="g-seg-row" id="supp-seg-row"></div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="supp-status-label">tomados hoy</div>
+      </div>
+    </div>
+    <div id="supp-list"></div>
+    <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:8px;">
+      <button class="btn-ghost" onclick="showSuppForm()" id="supp-add-btn" style="font-size:12px;width:100%;">+ Agregar suplemento</button>
+      <div id="supp-form" style="display:none;margin-top:8px;">
+        <div style="display:grid;grid-template-columns:1fr 80px 130px;gap:6px;margin-bottom:8px;">
+          <input type="text" id="supp-form-name" placeholder="Nombre" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+          <input type="text" id="supp-form-dose" placeholder="Dosis" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+          <input type="text" id="supp-form-timing" placeholder="Hora (ej: Noche)" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="saveNewSupp()">+ Guardar</button>
+          <button class="btn-ghost" onclick="hideSuppForm()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Adherencia — últimos 7 días</div>
+    <div id="supp-grid"></div>
+  </div>
+</div>
 <!-- TO-DO -->
 <div class="section" id="section-todos">
   <div class="card"><div class="card-title">Tareas de hoy</div><div id="todos-list"></div>
@@ -501,7 +556,7 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();
+  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();
 }
 function switchTab(name,btn){
   document.querySelectorAll('.tab,.nav-btn').forEach(t=>t.classList.remove('active'));
@@ -518,6 +573,7 @@ function switchTab(name,btn){
   if(name==='comidas'){renderMeals();setTimeout(renderKcalChart,50);}
   if(name==='habitos')setTimeout(renderHabitsChart,50);
   if(name==='agua'){renderWater();setTimeout(renderWaterChart,50);}
+  if(name==='suplementos')renderSupplements();
 }
 function renderStrip(){
   const tm=S.meals.filter(m=>m.date===today());
@@ -855,6 +911,80 @@ async function getAI(section){
   try{const r=await callAI([{role:'user',content:prompts[section]}],500);txt.textContent=r;}catch(e){txt.textContent='Error al conectar.';}
 }
 function emojiIcon(e){return "";}
+/* ── SUPLEMENTOS ── */
+const DEFAULT_SUPPS=[
+  {id:'s1',name:'Creatina',dose:'5g',timing:'Mañana'},
+  {id:'s2',name:'Proteína Whey',dose:'30g',timing:'Post-ent.'},
+  {id:'s3',name:'Omega 3',dose:'2 cápsulas',timing:'Noche'},
+  {id:'s4',name:'Vitamina D',dose:'1 cápsula',timing:'Mañana'},
+  {id:'s5',name:'Magnesio',dose:'400mg',timing:'Noche'},
+  {id:'s6',name:'Zinc',dose:'25mg',timing:'Noche'},
+  {id:'s7',name:'MK-677',dose:'1 cápsula',timing:'Noche'},
+];
+function getSuppData(){const d=lsGet('supplements_v1');return d||{supplements:JSON.parse(JSON.stringify(DEFAULT_SUPPS)),logs:{}};}
+function saveSuppData(d){lsSet('supplements_v1',d);}
+function getTodaySuppLog(d){return(d||getSuppData()).logs[getActiveDateString()]||[];}
+function toggleSupp(id){
+  const d=getSuppData(),date=getActiveDateString();
+  if(!d.logs[date])d.logs[date]=[];
+  const idx=d.logs[date].indexOf(id);
+  if(idx>=0)d.logs[date].splice(idx,1);else d.logs[date].push(id);
+  saveSuppData(d);renderSupplements();
+}
+function deleteSupp(id){const d=getSuppData();d.supplements=d.supplements.filter(s=>s.id!==id);saveSuppData(d);renderSupplements();}
+function showSuppForm(){
+  document.getElementById('supp-form').style.display='block';
+  document.getElementById('supp-add-btn').style.display='none';
+  setTimeout(()=>document.getElementById('supp-form-name').focus(),10);
+}
+function hideSuppForm(){
+  document.getElementById('supp-form').style.display='none';
+  document.getElementById('supp-add-btn').style.display='block';
+  ['supp-form-name','supp-form-dose','supp-form-timing'].forEach(id=>document.getElementById(id).value='');
+}
+function saveNewSupp(){
+  const name=document.getElementById('supp-form-name').value.trim();
+  const dose=document.getElementById('supp-form-dose').value.trim();
+  const timing=document.getElementById('supp-form-timing').value.trim();
+  if(!name)return;
+  const d=getSuppData();
+  d.supplements.push({id:'s'+Date.now(),name,dose:dose||'—',timing:timing||'—'});
+  saveSuppData(d);hideSuppForm();renderSupplements();
+}
+function startEditSuppField(el,id,field){
+  el.contentEditable='true';el.focus();
+  const sel=window.getSelection(),r=document.createRange();r.selectNodeContents(el);sel.removeAllRanges();sel.addRange(r);
+  const confirm=()=>{el.contentEditable='false';const val=el.textContent.trim();if(val){const d=getSuppData();const s=d.supplements.find(x=>x.id===id);if(s){s[field]=val;saveSuppData(d);}}else renderSupplements();};
+  el.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();confirm();el.onblur=null;}if(ev.key==='Escape'){el.contentEditable='false';el.onblur=null;renderSupplements();}};
+  el.onblur=confirm;
+}
+function renderSupplements(){
+  const d=getSuppData(),supps=d.supplements,todayLog=getTodaySuppLog(d);
+  const doneCount=todayLog.length,total=supps.length,allDone=total>0&&doneCount===total;
+  const dc=document.getElementById('supp-done-count');if(dc)dc.textContent=doneCount;
+  const tc=document.getElementById('supp-total-count');if(tc)tc.textContent=total;
+  const sl=document.getElementById('supp-status-label');if(sl)sl.textContent=allDone?'Todo tomado — buen día 💊':'tomados hoy';
+  const card=document.getElementById('supp-today-card');if(card)card.style.background=allDone?'rgba(107,227,164,0.04)':'';
+  const seg=document.getElementById('supp-seg-row');
+  if(seg)seg.innerHTML=supps.map(s=>'<div class="g-seg'+(todayLog.includes(s.id)?' filled':'')+'"></div>').join('');
+  const list=document.getElementById('supp-list');
+  if(list)list.innerHTML=supps.map(s=>{
+    const done=todayLog.includes(s.id);
+    return'<div class="supp-row'+(done?' is-done':'')+'"><div class="supp-cb'+(done?' checked':'')+'" onclick="toggleSupp(\''+s.id+'\')">'+(done?'✓':'')+'</div><span class="supp-name" onclick="startEditSuppField(this,\''+s.id+'\',\'name\')">'+s.name+'</span><span class="supp-dose" onclick="startEditSuppField(this,\''+s.id+'\',\'dose\')">'+s.dose+'</span><span class="supp-timing">'+s.timing+'</span><button class="supp-del" onclick="deleteSupp(\''+s.id+'\')">×</button></div>';
+  }).join('');
+  // weekly adherence grid
+  const last7=[];for(let i=6;i>=0;i--){const dt=new Date();dt.setDate(dt.getDate()-i);last7.push(dt.toISOString().split('T')[0]);}
+  const DAY_L=['D','L','M','X','J','V','S'];
+  const gridEl=document.getElementById('supp-grid');
+  if(!gridEl)return;
+  let html='<div style="display:flex;align-items:center;gap:8px;padding:0 0 6px;margin-bottom:2px;"><div style="width:110px;"></div><div class="supp-grid-dots">'+last7.map(date=>{const p=date.split('-');return'<div style="width:10px;font-size:9px;color:var(--text3);text-align:center;">'+DAY_L[new Date(+p[0],+p[1]-1,+p[2]).getDay()]+'</div>';}).join('')+'</div><div style="min-width:34px;font-size:9px;color:var(--text3);text-align:right;">7d</div></div>';
+  html+=supps.map(s=>{
+    const dots=last7.map(date=>'<div class="supp-dot'+((d.logs[date]||[]).includes(s.id)?' done':'')+'"></div>').join('');
+    const wk=last7.filter(date=>(d.logs[date]||[]).includes(s.id)).length;
+    return'<div class="supp-grid-row"><div class="supp-grid-name">'+s.name+'</div><div class="supp-grid-dots">'+dots+'</div><div class="supp-adh">'+Math.round(wk/7*100)+'%</div></div>';
+  }).join('');
+  gridEl.innerHTML=html;
+}
 /* ── WATER TRACKER ── */
 const WATER_GOAL_ML=1600;
 function getWaterLog(){return lsGet('water_log_v1')||{};}
@@ -984,9 +1114,9 @@ startTicker();
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s-5 6-5 11a5 5 0 0 0 10 0c0-5-5-11-5-11z"/><path d="M12 15c0-2 1.5-3.5 1-5-1.5 1-2.5 2.5-1 5z"/></svg>
       Hábitos
     </button>
-    <button class="btab" id="btab-goals" onclick="switchTab('goals',this)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/></svg>
-      Goals
+    <button class="btab" id="btab-suplementos" onclick="switchTab('suplementos',this)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>
+      Suplem.
     </button>
   </div>
 </nav>
