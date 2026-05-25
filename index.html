@@ -230,6 +230,21 @@ canvas{width:100%!important;display:block;}
 .supp-dot{width:10px;height:10px;border-radius:50%;background:var(--bg4);}
 .supp-dot.done{background:var(--green);}
 .supp-adh{font-size:11px;color:var(--text2);min-width:34px;text-align:right;font-family:'Courier New',monospace;}
+/* HABITS V2 */
+.habit2-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.06);margin-bottom:6px;transition:background .15s;}
+.habit2-row:hover{background:rgba(255,255,255,0.055);}
+.habit2-row.is-done{opacity:.52;background:rgba(107,227,164,0.06)!important;}
+.habit2-cb{width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.18);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0;user-select:none;}
+.habit2-cb.checked{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(107,227,164,.4);font-size:11px;color:#0d2015;font-weight:700;}
+.habit2-name{flex:1;font-size:14px;color:var(--text);min-width:0;}
+.habit2-row.is-done .habit2-name{text-decoration:line-through;color:var(--text3);}
+.habit2-streak{font-size:11px;padding:2px 9px;border-radius:999px;background:rgba(255,255,255,0.06);color:var(--text2);white-space:nowrap;flex-shrink:0;}
+.habit2-streak.hot{color:var(--accent);}
+.habit2-del{background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);opacity:0;padding:2px 4px;transition:opacity .15s;flex-shrink:0;}
+.habit2-row:hover .habit2-del{opacity:.5;}
+.habit2-del:hover{opacity:1!important;color:var(--red);}
+.habit2-add-btn{width:100%;font-size:12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;color:var(--text2);cursor:pointer;font-family:var(--font);letter-spacing:.03em;transition:background .15s;}
+.habit2-add-btn:hover{background:rgba(255,255,255,0.05);color:var(--text);opacity:1;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(10,10,11,0) 0%,rgba(10,10,11,0.94) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
 .btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:460px;}
@@ -334,8 +349,28 @@ canvas{width:100%!important;display:block;}
 </div>
 <!-- HÁBITOS -->
 <div class="section" id="section-habitos">
-  <div class="card"><div class="card-title">Hábitos diarios</div><div id="habits-list"></div>
-    <div class="add-row"><input type="text" id="habit-input" placeholder="Nuevo hábito..." onkeydown="if(event.key==='Enter')addHabit()"/><button onclick="addHabit()">+ Agregar</button></div>
+  <div class="card" id="habit-today-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+      <div style="flex:1;">
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:28px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;" id="habit-done-count">0</span>
+          <span style="font-size:13px;color:var(--text2);">/ <span id="habit-total-count">0</span> completados hoy</span>
+        </div>
+        <div class="g-seg-row" id="habit-seg-row"></div>
+        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="habit-status-label">completados hoy</div>
+      </div>
+    </div>
+    <div id="habits-list"></div>
+    <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:8px;">
+      <button class="habit2-add-btn" onclick="showHabitForm()" id="habit-add-btn">+ Agregar hábito</button>
+      <div id="habit-form" style="display:none;margin-top:8px;">
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="habit-input" placeholder="Nombre del hábito..." style="flex:1;font-size:13px;" onkeydown="if(event.key==='Enter')addHabit();if(event.key==='Escape')hideHabitForm();"/>
+          <button onclick="addHabit()">+ Guardar</button>
+          <button class="btn-ghost" onclick="hideHabitForm()">Cancelar</button>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="card" id="habits-chart-card" style="display:none;"></div>
 </div>
@@ -680,17 +715,30 @@ async function sendChat(){
   chatLoading=false;document.getElementById('chat-messages').scrollTop=99999;
 }
 function clearChat(){document.getElementById('chat-messages').innerHTML='';summaryLoaded=false;loadSummary();}
-function addHabit(){const t=document.getElementById('habit-input').value.trim();if(!t)return;S.habits.push({name:t,log:[]});document.getElementById('habit-input').value='';saveState();renderHabits();renderStrip();}
+function showHabitForm(){document.getElementById('habit-form').style.display='block';document.getElementById('habit-add-btn').style.display='none';setTimeout(()=>document.getElementById('habit-input').focus(),10);}
+function hideHabitForm(){document.getElementById('habit-form').style.display='none';document.getElementById('habit-add-btn').style.display='block';document.getElementById('habit-input').value='';}
+function addHabit(){const t=document.getElementById('habit-input').value.trim();if(!t)return;S.habits.push({name:t,log:[]});hideHabitForm();saveState();renderHabits();renderStrip();}
 function toggleHabit(i){const t=today(),idx=S.habits[i].log.indexOf(t);if(idx>=0)S.habits[i].log.splice(idx,1);else S.habits[i].log.push(t);saveState();renderHabits();renderStrip();}
 function getStreak(log){let s=0;const d=new Date();while(true){if(log.includes(d.toLocaleDateString('es-CL'))){s++;d.setDate(d.getDate()-1);}else break;}return s;}
 function renderHabits(){
   const el=document.getElementById('habits-list'),t=today();
-  if(!S.habits.length){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin habitos aun.</p>';return;}
+  if(!el)return;
+  const total=S.habits.length;
+  const doneCount=S.habits.filter(h=>h.log.includes(t)).length;
+  const allDone=total>0&&doneCount===total;
+  const dc=document.getElementById('habit-done-count');if(dc)dc.textContent=doneCount;
+  const tc=document.getElementById('habit-total-count');if(tc)tc.textContent=total;
+  const sl=document.getElementById('habit-status-label');if(sl)sl.textContent=allDone?'¡Todo completado — excelente día! ✓':'completados hoy';
+  const card=document.getElementById('habit-today-card');if(card)card.style.background=allDone?'rgba(107,227,164,0.04)':'';
+  const seg=document.getElementById('habit-seg-row');
+  if(seg)seg.innerHTML=total?S.habits.map(h=>'<div class="g-seg'+(h.log.includes(t)?' filled':'')+'"></div>').join(''):'';
+  if(!total){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin hábitos aún. Agrega uno.</p>';return;}
   const last14=[];for(let d=13;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last14.push(dt.toLocaleDateString('es-CL'));}
   el.innerHTML=S.habits.map((h,i)=>{
     const done=h.log.includes(t),streak=getStreak(h.log);
+    const streakLabel=streak>0?'🔥 '+streak+' d':'—';
     const dots=last14.map(d=>'<div class="dot'+(h.log.includes(d)?' done':'')+'"></div>').join('');
-    return'<div class="habit-row"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;" '+(done?'checked':'')+' onchange="toggleHabit('+i+')"/><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;"><span style="font-size:13px;color:var(--text);">'+h.name+'</span><span class="streak-badge'+(streak>=3?' hot':'')+'"> '+(streak>0?'&#9642; '+streak+' d':'-')+'</span></div><div class="dots-row">'+dots+'</div></div><button class="del-btn" onclick="S.habits.splice('+i+',1);saveState();renderHabits();">x</button></div>';
+    return`<div class="habit2-row${done?' is-done':''}"><div class="habit2-cb${done?' checked':''}" onclick="toggleHabit(${i})">${done?'✓':''}</div><div style="flex:1;min-width:0;"><div class="habit2-name">${h.name}</div><div class="dots-row" style="margin-top:5px;">${dots}</div></div><span class="habit2-streak${streak>=3?' hot':''}">${streakLabel}</span><button class="habit2-del" onclick="S.habits.splice(${i},1);saveState();renderHabits();">×</button></div>`;
   }).join('');
 }
 function renderHabitsChart(){
