@@ -1378,32 +1378,32 @@ setInterval(updateDayRing,60000);
 loadState();
 startTicker();
 </script>
-<!-- BOTTOM TAB BAR — hijo directo de body para position:fixed correcto -->
+<!-- BOTTOM TAB BAR — 6 tabs — hijo directo de body -->
 <nav class="btab-bar">
   <div class="btab-pill">
-    <button class="btab active" id="btab-inicio" onclick="switchTab('inicio',this)">
+    <button class="btab active" id="btab-inicio" onclick="switchTab('inicio')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       Inicio
     </button>
-    <button class="btab" id="btab-workout" onclick="switchTab('workout',this)">
+    <button class="btab" id="btab-workout" onclick="switchTab('workout')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="2" y1="12" x2="22" y2="12"/><rect x="3" y="8" width="4" height="8" rx="1"/><rect x="17" y="8" width="4" height="8" rx="1"/></svg>
       Workout
     </button>
-    <button class="btab" id="btab-comidas" onclick="switchTab('comidas',this)">
+    <button class="btab" id="btab-nutricion" onclick="switchTab('nutricion')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="2" x2="9" y2="22"/><path d="M5 2v6c0 2.2 1.8 4 4 4s4-1.8 4-4V2"/><line x1="19" y1="2" x2="19" y2="22"/><path d="M17 2s3.5 2 3.5 7-3.5 7-3.5 7"/></svg>
-      Comidas
+      Nutrición
     </button>
-    <button class="btab" id="btab-agua" onclick="switchTab('agua',this)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0C19 10 12 2 12 2z"/></svg>
-      Agua
-    </button>
-    <button class="btab" id="btab-habitos" onclick="switchTab('habitos',this)">
+    <button class="btab" id="btab-habitos" onclick="switchTab('habitos')">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2s-5 6-5 11a5 5 0 0 0 10 0c0-5-5-11-5-11z"/><path d="M12 15c0-2 1.5-3.5 1-5-1.5 1-2.5 2.5-1 5z"/></svg>
       Hábitos
     </button>
-    <button class="btab" id="btab-suplementos" onclick="switchTab('suplementos',this)">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5-7-7a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>
-      Suplem.
+    <button class="btab" id="btab-goals" onclick="switchTab('goals')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Goals
+    </button>
+    <button class="btab" id="btab-sleep" onclick="switchTab('sleep')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Sleep
     </button>
   </div>
 </nav>
