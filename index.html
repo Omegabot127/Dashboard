@@ -444,11 +444,14 @@ canvas{width:100%!important;display:block;}
   <div class="card" id="sleep-chart-card" style="display:none;"><div class="card-title">Horas de sueño — 14 días</div><canvas id="sleep-chart" height="140"></canvas></div>
   <div class="ai-box" id="ai-sleep" style="display:none;"><div class="ai-title">Análisis IA</div><div class="ai-output" id="ai-sleep-text"></div></div>
 </div>
-<!-- COMIDAS -->
-<div class="section" id="section-comidas">
+<!-- NUTRICIÓN -->
+<div class="section" id="section-nutricion">
   <div class="card"><div class="card-title">Calorías de hoy</div>
     <div class="kcal-ring-wrap">
-      
+      <svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;">
+        <circle cx="45" cy="45" r="38" fill="none" stroke="var(--bg4)" stroke-width="7"/>
+        <circle id="kcal-ring" cx="45" cy="45" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" transform="rotate(-90 45 45)"/>
+      </svg>
       <div><div style="font-size:26px;font-weight:400;color:var(--text);"><span id="kcal-consumed">0</span><span class="metric-unit"> kcal</span></div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Objetivo: 3,000 kcal</div><div style="font-size:12px;margin-top:3px;font-weight:500;" id="kcal-remaining"></div></div>
     </div>
     <div class="metrics-grid">
@@ -470,48 +473,37 @@ canvas{width:100%!important;display:block;}
   <div class="card" id="meals-list-card" style="display:none;"><div class="card-title">Registro de hoy</div><div id="meals-list"></div></div>
   <div class="card" id="kcal-chart-card" style="display:none;"><div class="card-title">Calorías — 7 días</div><canvas id="kcal-chart" height="140"></canvas></div>
   <div class="ai-box" id="ai-comidas" style="display:none;"><div class="ai-title">Plan IA</div><div class="ai-output" id="ai-comidas-text"></div></div>
-</div>
-<!-- AGUA -->
-<div class="section" id="section-agua">
+  <!-- AGUA COMPACTA -->
   <div class="card">
     <div class="card-title">Agua de hoy</div>
-    <div style="display:flex;align-items:center;gap:24px;margin-bottom:16px;">
-      <div style="position:relative;width:130px;height:130px;flex-shrink:0;">
-        <svg width="130" height="130" viewBox="0 0 130 130">
-          <circle cx="65" cy="65" r="54" fill="none" stroke="#7DD3FC" stroke-opacity="0.15" stroke-width="8"/>
-          <circle id="water-ring" cx="65" cy="65" r="54" fill="none" stroke="#7DD3FC" stroke-width="8" stroke-linecap="round" stroke-dasharray="339.3" stroke-dashoffset="339.3" transform="rotate(-90 65 65)"/>
-        </svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;">
-          <div id="water-glasses-num" style="font-size:26px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;">0</div>
-          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;">vasos</div>
-        </div>
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:22px;font-weight:400;color:var(--text);"><span id="water-ml-total">0</span><span style="font-size:13px;color:var(--text2);"> ml</span></div>
-        <div style="font-size:12px;color:var(--text2);margin-top:3px;">de 8 vasos · 1,600 ml</div>
-        <div style="font-size:12px;margin-top:5px;font-weight:500;" id="water-remaining"></div>
-        <div id="water-goal-msg" style="display:none;font-size:12px;color:var(--green);margin-top:5px;">¡Objetivo alcanzado! 💧</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div>
+        <div style="font-size:20px;font-weight:400;color:var(--text);"><span id="water-glasses-num">0</span><span style="font-size:12px;color:var(--text2);"> vasos · </span><span id="water-ml-total">0</span><span style="font-size:12px;color:var(--text2);"> ml</span></div>
+        <div style="font-size:12px;margin-top:2px;" id="water-remaining"></div>
+        <div id="water-goal-msg" style="display:none;font-size:12px;color:var(--green);margin-top:2px;">¡Objetivo alcanzado! 💧</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-      <button class="btn-ghost" onclick="addWater(200)" style="padding:10px 8px;font-size:12px;">+ 1 vaso · 200ml</button>
-      <button class="btn-ghost" onclick="addWater(400)" style="padding:10px 8px;font-size:12px;">+ 2 vasos · 400ml</button>
-      <button class="btn-ghost" onclick="addWater(100)" style="padding:10px 8px;font-size:12px;">+ ½ vaso · 100ml</button>
-      <button class="btn-ghost" onclick="toggleWaterCustom()" style="padding:10px 8px;font-size:12px;">Personalizado</button>
+    <div id="water-seg-bar" class="water-seg-bar">
+      <div class="water-seg"></div><div class="water-seg"></div><div class="water-seg"></div><div class="water-seg"></div>
+      <div class="water-seg"></div><div class="water-seg"></div><div class="water-seg"></div><div class="water-seg"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;">
+      <button class="btn-ghost" onclick="addWater(200)" style="padding:8px 6px;font-size:12px;">+ 1 vaso · 200ml</button>
+      <button class="btn-ghost" onclick="addWater(400)" style="padding:8px 6px;font-size:12px;">+ 2 vasos · 400ml</button>
+      <button class="btn-ghost" onclick="addWater(100)" style="padding:8px 6px;font-size:12px;">+ ½ vaso · 100ml</button>
+      <button class="btn-ghost" onclick="toggleWaterCustom()" style="padding:8px 6px;font-size:12px;">Personalizado</button>
     </div>
     <div id="water-custom-row" style="display:none;">
-      <div class="add-row"><input type="number" id="water-custom-input" placeholder="Cantidad en ml..." min="1" max="3000" onkeydown="if(event.key==='Enter')addCustomWater()"/><button onclick="addCustomWater()">+ Agregar</button></div>
+      <div class="add-row" style="margin-top:8px;"><input type="number" id="water-custom-input" placeholder="Cantidad en ml..." min="1" max="3000" onkeydown="if(event.key==='Enter')addCustomWater()"/><button onclick="addCustomWater()">+ Agregar</button></div>
+    </div>
+    <div style="margin-top:10px;">
+      <div style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Registros de hoy</div>
+      <div id="water-history-list"><p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin registros hoy.</p></div>
     </div>
   </div>
-  <div class="card" id="water-history-card">
-    <div class="card-title">Registros de hoy</div>
-    <div id="water-history-list"><p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin registros hoy.</p></div>
-  </div>
-  <div class="card" id="water-chart-card">
-    <div class="card-title">Vasos — últimos 7 días</div>
-    <canvas id="water-chart" height="140"></canvas>
-  </div>
+  <div class="card" id="water-chart-card"><div class="card-title">Vasos — últimos 7 días</div><canvas id="water-chart" height="140"></canvas></div>
 </div>
+<!-- AGUA (eliminada — contenido fusionado en Nutrición) -->
 <!-- GOALS -->
 <div class="section" id="section-goals">
   <!-- TODAY -->
