@@ -263,6 +263,12 @@ canvas{width:100%!important;display:block;}
 </style>
 </head>
 <body>
+<!-- NIGHT ALERT BANNER -->
+<div id="night-alert-banner" style="position:fixed;top:0;left:0;right:0;z-index:999;background:var(--accent);color:var(--bg);padding:12px 16px;display:flex;align-items:center;gap:10px;transform:translateY(-100%);transition:transform .35s cubic-bezier(.22,1,.36,1);pointer-events:none;">
+  <span style="flex:1;font-size:13px;font-weight:500;letter-spacing:.02em;" id="night-alert-text">Son las 10 PM — tienes acciones pendientes</span>
+  <button onclick="bannerNavigate()" style="background:rgba(0,0,0,.22);border:none;border-radius:6px;padding:5px 12px;color:var(--bg);font-size:12px;cursor:pointer;font-family:var(--font);font-weight:500;flex-shrink:0;">Ver</button>
+  <button onclick="closeBanner()" style="background:none;border:none;color:var(--bg);font-size:20px;cursor:pointer;padding:0 4px;line-height:1;flex-shrink:0;opacity:.85;">×</button>
+</div>
 <!-- APP HEADER -->
 <div class="app-header">
   <div class="app-header-left">
@@ -686,6 +692,14 @@ canvas{width:100%!important;display:block;}
     <div class="add-row"><input type="text" id="todo-input" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTodo()"/><button onclick="addTodo()">+ Agregar</button></div>
     <div style="margin-top:8px;"><button class="btn-ghost" onclick="getAI('todos')" style="font-size:12px;">Priorizar tareas ↗</button></div>
     <div class="ai-box" id="ai-todos" style="display:none;margin-top:10px;"><div class="ai-title">Priorización IA</div><div class="ai-output" id="ai-todos-text"></div></div>
+  </div>
+  <!-- ACTIONS HISTORY -->
+  <div class="card" style="margin-top:10px;" id="actions-history-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="toggleActionsHistory()">
+      <div class="card-title" style="margin-bottom:0;">Historial de acciones</div>
+      <span id="ah-chevron" style="font-size:12px;color:var(--text3);">▾</span>
+    </div>
+    <div id="ah-body" style="display:none;margin-top:12px;"></div>
   </div>
 </div>
 </div>
@@ -1825,8 +1839,73 @@ function updateDayRing(){
 }
 updateDayRing();
 setInterval(updateDayRing,60000);
+/* ── NIGHT ALERT ── */
+const ALERT_SHOWN_KEY='alert_shown_v1';
+function checkNightAlert(){
+  const h=new Date().getHours();
+  if(h!==22&&h!==23)return;
+  const shown=lsGet(ALERT_SHOWN_KEY);
+  const tod=getActiveDateString();
+  if(shown===tod)return;
+  const d=getGoalActionsData();
+  const date=getActiveDateString();
+  const dayLog=d.daily_logs[date]||{};
+  let pending=0;
+  d.goals.forEach(ge=>{(ge.actions||[]).forEach(a=>{if(!dayLog[a.id])pending++;});});
+  if(pending===0)return;
+  lsSet(ALERT_SHOWN_KEY,tod);
+  showNightBanner(pending);
+}
+function showNightBanner(pending){
+  const el=document.getElementById('night-alert-banner');
+  const txt=document.getElementById('night-alert-text');
+  if(!el)return;
+  if(txt)txt.textContent='Son las 10 PM — tienes '+pending+' acción'+(pending!==1?'es':'')+' pendiente'+(pending!==1?'s':'');
+  el.style.pointerEvents='auto';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.transform='translateY(0)';}));
+}
+function closeBanner(){
+  const el=document.getElementById('night-alert-banner');
+  if(!el)return;
+  el.style.transform='translateY(-100%)';
+  setTimeout(()=>{el.style.pointerEvents='none';},360);
+}
+function bannerNavigate(){closeBanner();switchTab('goals');}
+setInterval(checkNightAlert,60000);
+/* ── ACTIONS HISTORY ── */
+let actionsHistoryOpen=false;
+function toggleActionsHistory(){
+  actionsHistoryOpen=!actionsHistoryOpen;
+  const body=document.getElementById('ah-body');
+  const chev=document.getElementById('ah-chevron');
+  if(!body)return;
+  body.style.display=actionsHistoryOpen?'block':'none';
+  if(chev)chev.textContent=actionsHistoryOpen?'▴':'▾';
+  if(actionsHistoryOpen)renderActionsHistory();
+}
+function renderActionsHistory(){
+  const el=document.getElementById('ah-body');
+  if(!el)return;
+  const d=getGoalActionsData();
+  const rows=[];
+  for(let i=0;i<7;i++){
+    const dt=new Date();
+    dt.setDate(dt.getDate()-i);
+    const key=dt.toISOString().split('T')[0];
+    const dayLog=d.daily_logs[key]||{};
+    let total=0,done=0;
+    d.goals.forEach(ge=>{(ge.actions||[]).forEach(a=>{total++;if(dayLog[a.id])done++;});});
+    if(total===0)continue;
+    const pct=Math.round(done/total*100);
+    const label=i===0?'Hoy':i===1?'Ayer':dt.toLocaleDateString('es-CL',{weekday:'short',day:'numeric',month:'short'});
+    const barColor=pct>=80?'var(--green)':pct>=50?'var(--accent)':'var(--red)';
+    rows.push(`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><span style="font-size:12px;color:var(--text2);">${label}</span><span style="font-size:11px;color:${barColor};font-weight:500;">${done}/${total} · ${pct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor};"></div></div></div>`);
+  }
+  el.innerHTML=rows.length?rows.join(''):'<p style="font-size:12px;color:var(--text3);text-align:center;padding:8px 0;">Sin historial aún</p>';
+}
 loadState();
 startTicker();
+checkNightAlert();
 </script>
 <!-- BOTTOM TAB BAR — 6 tabs — hijo directo de body -->
 <nav class="btab-bar">
