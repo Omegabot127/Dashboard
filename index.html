@@ -10,33 +10,20 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
 .app{width:100%;max-width:100%;padding:0;}
-.app-shell{display:grid;grid-template-columns:200px 1fr;min-height:100vh;}
-.app-sidebar{border-right:0.5px solid var(--border);padding:2rem 1.25rem;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--bg);}
-.app-sidebar .logo{font-size:18px;font-weight:400;color:var(--text);margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:0.5px solid var(--border);}
-.app-sidebar .date-str{font-size:10px;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.5rem;}
-.nav-btn{font-size:11px;padding:8px 12px;border:none;background:none;cursor:pointer;color:var(--text2);white-space:nowrap;font-family:var(--font);letter-spacing:.05em;text-transform:uppercase;transition:all .15s;text-align:left;border-radius:6px;width:100%;}
-.nav-btn.active{color:var(--accent);background:var(--accent-bg);}
-.nav-btn:hover:not(.active){color:var(--text);background:var(--bg3);}
-.app-main{padding:2rem 2.5rem 110px;max-width:900px;}
-@media(max-width:768px){
-  .app-shell{grid-template-columns:1fr;}
-  .app-sidebar{display:none;}
-  .app-main{padding:1rem 1rem 110px;}
-  .mobile-tabs{display:flex!important;}
-}
-.mobile-tabs{display:none;gap:1px;border-bottom:0.5px solid var(--border);overflow-x:auto;margin-bottom:1.25rem;scrollbar-width:none;background:var(--bg);padding:0 1rem;}
-.mobile-tabs::-webkit-scrollbar{display:none;}
-.tab{font-size:11px;padding:7px 11px;border:none;background:none;cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;margin-bottom:-0.5px;white-space:nowrap;font-family:var(--font);letter-spacing:.05em;text-transform:uppercase;transition:color .15s;}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab:hover:not(.active){color:var(--text2);}
+/* APP HEADER */
+.app-header{display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.5rem 1rem;border-bottom:0.5px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:10;}
+.app-header-left{display:flex;align-items:center;gap:10px;}
+.app-header-name{font-size:18px;font-weight:400;color:var(--text);}
+.header-streak{display:flex;align-items:center;gap:5px;}
+/* PESO WIDGET */
+.peso-widget{max-height:0;overflow:hidden;transition:max-height .35s ease,margin-bottom .35s ease;}
+/* SHELL + MAIN */
+.app-shell{display:block;}
+.app-main{max-width:860px;margin:0 auto;padding:1.5rem 1.5rem 100px;}
+@media(max-width:480px){.app-main{padding:1rem 1rem 100px;}}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
 .header h1{font-size:20px;font-weight:400;letter-spacing:.02em;}
 .date-str{font-size:11px;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;}
-.tabs{display:flex;gap:1px;border-bottom:0.5px solid var(--border);overflow-x:auto;margin-bottom:1.5rem;scrollbar-width:none;}
-.tabs::-webkit-scrollbar{display:none;}
-.tab{font-size:11px;padding:7px 11px;border:none;background:none;cursor:pointer;color:var(--text3);border-bottom:1.5px solid transparent;margin-bottom:-0.5px;white-space:nowrap;font-family:var(--font);letter-spacing:.05em;text-transform:uppercase;transition:color .15s;}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab:hover:not(.active){color:var(--text2);}
 .section{display:none;}.section.active{display:block;}
 .card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:1rem 1.25rem;margin-bottom:10px;}
 .card-title{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
@@ -209,8 +196,11 @@ canvas{width:100%!important;display:block;}
 .g-polish-btn:hover{color:var(--text);opacity:1;}
 .g-add-btn{background:var(--accent);color:var(--bg);border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:var(--font);}
 .g-add-btn:hover{opacity:.85;}
-/* SIDEBAR STREAK */
-.sidebar-streak{display:flex;align-items:center;gap:5px;margin-bottom:1rem;}
+/* WATER SEG BAR */
+.water-seg-bar{display:flex;gap:3px;height:6px;margin:8px 0;}
+.water-seg{flex:1;height:100%;border-radius:2px;background:var(--bg4);}
+.water-seg.done{background:#7DD3FC;}
+.water-seg.over{background:var(--green);}
 /* SUPPLEMENTS */
 .supp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.06);margin-bottom:6px;transition:background .15s;}
 .supp-row:hover{background:rgba(255,255,255,0.055);}
@@ -247,7 +237,7 @@ canvas{width:100%!important;display:block;}
 .habit2-add-btn:hover{background:rgba(255,255,255,0.05);color:var(--text);opacity:1;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(10,10,11,0) 0%,rgba(10,10,11,0.94) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
-.btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:460px;}
+.btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:520px;}
 .btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px 8px;border-radius:13px;border:1px solid transparent;background:none;cursor:pointer;color:rgba(255,255,255,0.42);font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.02em;line-height:1;transition:all .15s;}
 .btab svg{flex-shrink:0;}
 .btab:hover{color:rgba(255,255,255,0.85);}
