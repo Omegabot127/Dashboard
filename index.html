@@ -362,6 +362,73 @@ canvas{width:100%!important;display:block;}
     <div class="cal-grid" id="cal-grid"></div>
   </div>
   <div id="routine-panel"></div>
+  <!-- PROGRESSIVE OVERLOAD -->
+  <div class="card" id="po-card">
+    <div class="card-title">Progressive Overload</div>
+    <select id="po-exercise-select" onchange="poSelectExercise()" style="width:100%;font-size:13px;padding:8px 10px;margin-bottom:16px;">
+      <optgroup label="Lunes — Upper Body">
+        <option>Incline Barbell Press</option>
+        <option>Pec Deck Fly</option>
+        <option>Lat Pulldown</option>
+        <option>Barbell Row</option>
+        <option>Lateral Raises</option>
+        <option>Preacher Curl</option>
+        <option>Cable Pushdown</option>
+      </optgroup>
+      <optgroup label="Martes — Lower Body">
+        <option>Leg Extension</option>
+        <option>Leg Press</option>
+        <option>Hip Adductor Machine</option>
+        <option>Standing Calf Raises</option>
+        <option>Cable Crunch</option>
+        <option>Plank</option>
+      </optgroup>
+      <optgroup label="Jueves — Upper Body">
+        <option>Seated Chest Press</option>
+        <option>Barbell Row</option>
+        <option>Rear Delt Machine</option>
+        <option>Lat Pulldown Supine</option>
+        <option>Lateral Raises</option>
+        <option>Bayesian Curl</option>
+        <option>Preacher Curl</option>
+        <option>Overhead Cable Ext</option>
+        <option>Cable Pushdown</option>
+      </optgroup>
+      <optgroup label="Viernes — Lower Body">
+        <option>Seated Leg Curl</option>
+        <option>Romanian Deadlift</option>
+        <option>Hip Thrust</option>
+        <option>Standing Calf Raises</option>
+        <option>Hanging Leg Raises</option>
+        <option>Ab Wheel Rollout</option>
+      </optgroup>
+    </select>
+    <!-- Prescripción -->
+    <div id="po-prescription"></div>
+    <!-- Logger -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">Registrar set</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+        <button class="btn-ghost" onclick="poAdjWeight(-2.5)" style="padding:6px 16px;font-size:20px;font-weight:300;line-height:1;">−</button>
+        <div style="text-align:center;flex:1;">
+          <div id="po-weight-display" style="font-size:36px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;">20</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px;">kg</div>
+        </div>
+        <button class="btn-ghost" onclick="poAdjWeight(2.5)" style="padding:6px 16px;font-size:20px;font-weight:300;line-height:1;">+</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;">Reps</div>
+      <div id="po-rep-pills" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px;"></div>
+      <div id="po-last-info" style="font-size:11px;color:var(--text3);margin-bottom:12px;min-height:15px;"></div>
+      <button onclick="savePOSet()" style="width:100%;padding:11px;font-size:13px;font-weight:600;letter-spacing:.04em;border-radius:8px;">Guardar set ↗</button>
+    </div>
+    <!-- Stats + sparkline -->
+    <div id="po-stats-boxes" style="margin-bottom:6px;"></div>
+    <!-- Historial -->
+    <div style="border-top:0.5px solid var(--border);padding-top:12px;margin-top:8px;">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Últimas 5 sesiones</div>
+      <div id="po-history-list"></div>
+    </div>
+  </div>
   <div class="ai-box" id="ai-workout" style="display:none;"><div class="ai-title">Consejo IA</div><div class="ai-output" id="ai-workout-text"></div></div>
 </div>
 <!-- SLEEP -->
@@ -556,7 +623,7 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();
+  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();
 }
 function switchTab(name,btn){
   document.querySelectorAll('.tab,.nav-btn').forEach(t=>t.classList.remove('active'));
@@ -568,7 +635,7 @@ function switchTab(name,btn){
   const bt=document.getElementById('btab-'+name);if(bt)bt.classList.add('active');
   document.getElementById('section-'+name).classList.add('active');
   if(name==='peso')setTimeout(renderPesoChart,50);
-  if(name==='workout'){renderWkStats();renderCalendar();}
+  if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
   if(name==='sleep')setTimeout(renderSleepChart,50);
   if(name==='comidas'){renderMeals();setTimeout(renderKcalChart,50);}
   if(name==='habitos')setTimeout(renderHabitsChart,50);
@@ -984,6 +1051,211 @@ function renderSupplements(){
     return'<div class="supp-grid-row"><div class="supp-grid-name">'+s.name+'</div><div class="supp-grid-dots">'+dots+'</div><div class="supp-adh">'+Math.round(wk/7*100)+'%</div></div>';
   }).join('');
   gridEl.innerHTML=html;
+}
+/* ── PROGRESSIVE OVERLOAD ── */
+const PO_CFG={
+  'Incline Barbell Press':{repMin:5,repMax:8,step:2.5},
+  'Pec Deck Fly':{repMin:10,repMax:12,step:1.25},
+  'Lat Pulldown':{repMin:10,repMax:12,step:1.25},
+  'Barbell Row':{repMin:5,repMax:8,step:2.5},
+  'Lateral Raises':{repMin:10,repMax:12,step:1.25},
+  'Preacher Curl':{repMin:10,repMax:12,step:1.25},
+  'Cable Pushdown':{repMin:10,repMax:12,step:1.25},
+  'Leg Extension':{repMin:10,repMax:12,step:2.5},
+  'Leg Press':{repMin:8,repMax:10,step:5},
+  'Hip Adductor Machine':{repMin:10,repMax:12,step:2.5},
+  'Standing Calf Raises':{repMin:12,repMax:15,step:2.5},
+  'Cable Crunch':{repMin:1,repMax:3,step:0},
+  'Plank':{repMin:1,repMax:3,step:0},
+  'Seated Chest Press':{repMin:5,repMax:8,step:2.5},
+  'Rear Delt Machine':{repMin:10,repMax:12,step:1.25},
+  'Lat Pulldown Supine':{repMin:10,repMax:12,step:1.25},
+  'Bayesian Curl':{repMin:10,repMax:12,step:1.25},
+  'Overhead Cable Ext':{repMin:10,repMax:12,step:1.25},
+  'Seated Leg Curl':{repMin:10,repMax:12,step:2.5},
+  'Romanian Deadlift':{repMin:8,repMax:10,step:5},
+  'Hip Thrust':{repMin:8,repMax:10,step:5},
+  'Hanging Leg Raises':{repMin:1,repMax:3,step:0},
+  'Ab Wheel Rollout':{repMin:1,repMax:3,step:0},
+};
+let poEx='Incline Barbell Press', poWt=20, poReps=6;
+function getPOLogs(){return lsGet('po_logs_v1')||{};}
+function savePOLogs(l){lsSet('po_logs_v1',l);}
+function poSelectExercise(){
+  const sel=document.getElementById('po-exercise-select');
+  if(sel){poEx=sel.value;}
+  const logs=getPOLogs()[poEx]||[];
+  const last=logs[logs.length-1];
+  const cfg=PO_CFG[poEx]||{repMin:8,repMax:12,step:2.5};
+  if(last){poWt=last.weight;poReps=last.reps;}
+  else{poWt=20;poReps=cfg.repMin;}
+  renderPO();
+}
+function getPOPrescription(){
+  const logs=getPOLogs()[poEx]||[];
+  const cfg=PO_CFG[poEx]||{repMin:8,repMax:12,step:2.5};
+  if(!logs.length)return{status:'START',weight:20,msg:'Primer registro — empieza con un peso cómodo.'};
+  const last=logs[logs.length-1];
+  if(cfg.step===0)return{status:'REPS',weight:last.weight,msg:`Ejercicio de reps. Objetivo: ${cfg.repMin}–${cfg.repMax}`};
+  if(last.reps>=cfg.repMax){
+    const nw=+(last.weight+cfg.step).toFixed(2);
+    return{status:'UP',weight:nw,msg:`Lograste ${last.reps} reps ≥ ${cfg.repMax} → subir a ${nw} kg (+${cfg.step} kg)`};
+  }
+  if(last.reps<cfg.repMin){
+    const nw=Math.max(0,+(last.weight-cfg.step).toFixed(2));
+    return{status:'DOWN',weight:nw,msg:`Solo ${last.reps} reps < ${cfg.repMin} → bajar a ${nw} kg (−${cfg.step} kg)`};
+  }
+  return{status:'HOLD',weight:last.weight,msg:`${last.reps} reps dentro del rango ${cfg.repMin}–${cfg.repMax} → mantener ${last.weight} kg`};
+}
+function poAdjWeight(d){
+  poWt=Math.max(0,+(poWt+d).toFixed(2));
+  const el=document.getElementById('po-weight-display');
+  if(el)el.textContent=poWt+' kg';
+}
+function poSetReps(r){
+  poReps=r;
+  document.querySelectorAll('.po-rep-pill').forEach(p=>{
+    p.style.background=+p.dataset.r===r?'var(--accent)':'var(--bg3)';
+    p.style.color=+p.dataset.r===r?'var(--bg)':'var(--text2)';
+    p.style.borderColor=+p.dataset.r===r?'var(--accent)':'var(--border2)';
+  });
+}
+function savePOSet(){
+  const logs=getPOLogs();
+  if(!logs[poEx])logs[poEx]=[];
+  logs[poEx].push({date:getActiveDateString(),weight:poWt,reps:poReps});
+  savePOLogs(logs);
+  renderPO();
+}
+function deletePOEntry(ex,idx){
+  const logs=getPOLogs();
+  if(logs[ex]){logs[ex].splice(idx,1);savePOLogs(logs);}
+  renderPO();
+}
+function makePOSparkline(weights){
+  if(weights.length<2)return'';
+  const W=80,H=24,pad=2;
+  const mn=Math.min(...weights),mx=Math.max(...weights);
+  const rng=mx-mn||1;
+  const xs=weights.map((_,i)=>pad+(i/(weights.length-1))*(W-pad*2));
+  const ys=weights.map(w=>H-pad-((w-mn)/rng)*(H-pad*2));
+  const pts=xs.map((x,i)=>x+','+ys[i]).join(' ');
+  return`<svg width="${W}" height="${H}" style="display:block;"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function renderPO(){
+  const card=document.getElementById('po-card');if(!card)return;
+  const sel=document.getElementById('po-exercise-select');
+  if(sel&&sel.value!==poEx){poEx=sel.value;}
+
+  const logs=getPOLogs();
+  const exLogs=logs[poEx]||[];
+  const cfg=PO_CFG[poEx]||{repMin:8,repMax:12,step:2.5};
+  const presc=getPOPrescription();
+
+  // Sync weight to prescription if no manual change yet
+  if(exLogs.length===0){poWt=20;poReps=cfg.repMin;}
+
+  // Prescription banner
+  const statusColor={UP:'var(--green)',DOWN:'var(--red)',HOLD:'#F2C063',START:'#7B9CDF',REPS:'#7B9CDF'};
+  const statusLabel={UP:'↑ SUBIR PESO',DOWN:'↓ BAJAR PESO',HOLD:'→ MANTENER',START:'▶ COMENZAR',REPS:'○ REPS'};
+  const prescEl=document.getElementById('po-prescription');
+  if(prescEl){
+    prescEl.innerHTML=`<div style="border-radius:8px;padding:10px 14px;margin-bottom:14px;background:var(--bg3);border:0.5px solid ${statusColor[presc.status]}22;border-left:3px solid ${statusColor[presc.status]};">
+      <div style="font-size:10px;font-weight:600;color:${statusColor[presc.status]};letter-spacing:.08em;margin-bottom:4px;">${statusLabel[presc.status]}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.5;">${presc.msg}</div>
+    </div>`;
+  }
+
+  // Logger section — find it by structure (3rd child of po-card after title+select+prescription)
+  // We'll re-render the inner logger div
+  let logDiv=document.getElementById('po-logger');
+  if(!logDiv){
+    // Create logger div after po-prescription
+    logDiv=document.createElement('div');
+    logDiv.id='po-logger';
+    logDiv.style.marginBottom='14px';
+    prescEl.insertAdjacentElement('afterend',logDiv);
+  }
+  // Set suggested weight
+  if(!logDiv.dataset.init){
+    poWt=presc.weight;
+    if(exLogs.length>0)poReps=exLogs[exLogs.length-1].reps;
+    else poReps=cfg.repMin;
+    logDiv.dataset.init='1';
+  }
+  const lastEntry=exLogs[exLogs.length-1];
+  const lastInfo=lastEntry?`<div id="po-last-info" style="font-size:11px;color:var(--text3);margin-top:8px;">Última sesión: <b style="color:var(--text2);">${lastEntry.weight} kg × ${lastEntry.reps} reps</b> (${lastEntry.date})</div>`:`<div id="po-last-info" style="font-size:11px;color:var(--text3);margin-top:8px;">Sin registros previos</div>`;
+
+  // Rep pills — range based on cfg, show repMin-1 to repMax+2
+  const minPill=Math.max(1,cfg.repMin-2);
+  const maxPill=cfg.repMax+3;
+  let pillsHtml='';
+  for(let r=minPill;r<=maxPill;r++){
+    const active=r===poReps;
+    pillsHtml+=`<button class="po-rep-pill" data-r="${r}" onclick="poSetReps(${r})" style="font-size:12px;padding:5px 10px;border-radius:6px;border:0.5px solid ${active?'var(--accent)':'var(--border2)'};background:${active?'var(--accent)':'var(--bg3)'};color:${active?'var(--bg)':'var(--text2)'};cursor:pointer;font-family:var(--font);">${r}</button>`;
+  }
+
+  logDiv.innerHTML=`
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Registrar set</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <button class="btn-ghost" onclick="poAdjWeight(-2.5)" style="font-size:18px;width:36px;height:36px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;">−</button>
+      <div id="po-weight-display" style="font-size:28px;font-weight:300;font-family:monospace;min-width:90px;text-align:center;color:var(--text);">${poWt} kg</div>
+      <button class="btn-ghost" onclick="poAdjWeight(2.5)" style="font-size:18px;width:36px;height:36px;padding:0;border-radius:8px;display:flex;align-items:center;justify-content:center;">+</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Reps <span style="color:var(--text3);font-weight:400;">(objetivo: ${cfg.repMin}–${cfg.repMax})</span></div>
+    <div id="po-rep-pills" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">${pillsHtml}</div>
+    ${lastInfo}
+    <button onclick="savePOSet()" style="width:100%;margin-top:12px;padding:10px;font-size:13px;background:var(--accent);color:var(--bg);border:none;border-radius:8px;cursor:pointer;font-family:var(--font);font-weight:500;letter-spacing:.03em;">Guardar set</button>
+  `;
+
+  // Stats boxes
+  const statsEl=document.getElementById('po-stats-boxes');
+  if(statsEl){
+    if(exLogs.length===0){
+      statsEl.innerHTML='';
+    } else {
+      const weights=exLogs.map(l=>l.weight);
+      const maxW=Math.max(...weights);
+      const avgW=(weights.reduce((a,b)=>a+b,0)/weights.length).toFixed(1);
+      const totalSets=exLogs.length;
+      const spark=makePOSparkline(weights);
+      statsEl.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-bottom:10px;align-items:center;">
+        <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;border:0.5px solid var(--border);">
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Máx</div>
+          <div style="font-size:16px;color:var(--text);">${maxW} kg</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;border:0.5px solid var(--border);">
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Prom</div>
+          <div style="font-size:16px;color:var(--text);">${avgW} kg</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:8px 10px;border:0.5px solid var(--border);">
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Sets</div>
+          <div style="font-size:16px;color:var(--text);">${totalSets}</div>
+        </div>
+        <div style="padding:4px;">${spark}</div>
+      </div>`;
+    }
+  }
+
+  // History list (last 5)
+  const histEl=document.getElementById('po-history-list');
+  if(histEl){
+    if(exLogs.length===0){
+      histEl.innerHTML=`<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin sesiones registradas.</div>`;
+    } else {
+      const recent=exLogs.slice(-5).reverse();
+      histEl.innerHTML=recent.map((e,i)=>{
+        const realIdx=exLogs.length-1-(i);
+        return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);">
+          <div>
+            <span style="font-size:13px;color:var(--text);font-weight:400;">${e.weight} kg × ${e.reps} reps</span>
+            <span style="font-size:11px;color:var(--text3);margin-left:8px;">${e.date}</span>
+          </div>
+          <button class="del-btn" onclick="deletePOEntry('${poEx}',${realIdx})" title="Eliminar">×</button>
+        </div>`;
+      }).join('');
+    }
+  }
 }
 /* ── WATER TRACKER ── */
 const WATER_GOAL_ML=1600;
