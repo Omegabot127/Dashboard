@@ -304,6 +304,18 @@ canvas{width:100%!important;display:block;}
     </div>
     <div class="goal-ticker-meta" id="goalTickerMeta">0/0</div>
   </div>
+  <!-- ACCIONES DE HOY -->
+  <div class="card" id="daily-actions-card" style="display:none;margin-bottom:10px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <span style="font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'Courier New',monospace;">Acciones de hoy</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span id="da-counter" style="font-size:11px;color:var(--text2);font-family:'Courier New',monospace;">0/0</span>
+        <button onclick="switchTab('goals')" class="btn-ghost" style="font-size:10px;padding:3px 8px;">Ver en Goals →</button>
+      </div>
+    </div>
+    <div id="da-seg-bar" class="g-seg-row" style="margin-bottom:10px;"></div>
+    <div id="da-list"></div>
+  </div>
   <!-- DAY RING -->
   <div class="day-ring-card">
     <div class="day-ring-stat" style="text-align:right;">
@@ -699,14 +711,14 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();
+  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();renderDailyActionsWidget();
 }
 function switchTab(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.btab').forEach(t=>t.classList.remove('active'));
   const bt=document.getElementById('btab-'+name);if(bt)bt.classList.add('active');
   const sec=document.getElementById('section-'+name);if(sec)sec.classList.add('active');
-  if(name==='inicio'){renderTodosPreview();renderProjects();}
+  if(name==='inicio'){renderTodosPreview();renderProjects();renderDailyActionsWidget();}
   if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
   if(name==='sleep')setTimeout(renderSleepScreen,50);
   if(name==='nutricion'){renderMeals();renderWater();setTimeout(()=>{renderKcalChart();renderWaterChart();},50);}
@@ -830,6 +842,41 @@ function savePesoInline(){
 function renderPesoMini(){
   const el=document.getElementById('st-peso');
   if(el)el.textContent=S.peso.length?S.peso[S.peso.length-1].kg+' kg':'—';
+}
+function renderDailyActionsWidget(){
+  const card=document.getElementById('daily-actions-card');
+  const listEl=document.getElementById('da-list');
+  const counterEl=document.getElementById('da-counter');
+  const segBar=document.getElementById('da-seg-bar');
+  if(!card||!listEl||!counterEl||!segBar)return;
+  const d=getGoalActionsData();
+  const date=getActiveDateString();
+  const dayLog=d.daily_logs[date]||{};
+  // Flatten all actions from all goals
+  const all=[];
+  d.goals.forEach(ge=>{
+    const sGoal=S.goals.find(g=>g.id===ge.id);
+    const goalText=sGoal?sGoal.text:(ge.text||'Goal');
+    (ge.actions||[]).forEach(a=>{
+      all.push({actionId:a.id,actionText:a.text,goalId:ge.id,goalText,done:!!dayLog[a.id]});
+    });
+  });
+  if(!all.length){card.style.display='none';return;}
+  card.style.display='block';
+  const total=all.length,doneCount=all.filter(a=>a.done).length,allDone=total>0&&doneCount===total;
+  card.style.background=allDone?'rgba(107,227,164,0.04)':'';
+  counterEl.textContent=doneCount+'/'+total;
+  segBar.innerHTML=all.map(a=>'<div class="g-seg'+(a.done?' filled':'')+'"></div>').join('');
+  if(allDone){
+    listEl.innerHTML='<p style="font-size:12px;color:var(--green);padding:8px 0;text-align:center;letter-spacing:.03em;">✓ Todas las acciones completadas</p>';
+    return;
+  }
+  const sorted=[...all].sort((a,b)=>a.done-b.done);
+  listEl.innerHTML=sorted.map((a,idx)=>{
+    const isLast=idx===sorted.length-1;
+    const goalLabel=a.goalText.length>18?a.goalText.slice(0,18)+'…':a.goalText;
+    return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;${isLast?'':'border-bottom:0.5px solid var(--border);'}opacity:${a.done?'0.4':'1'};"><div class="g-action-cb${a.done?' done':''}" style="width:14px;height:14px;border-radius:3px;font-size:8px;flex-shrink:0;" onclick="toggleAction('${a.goalId}','${a.actionId}')">${a.done?'✓':''}</div><span style="flex:1;font-size:12px;color:${a.done?'var(--text3)':'var(--text2)'};${a.done?'text-decoration:line-through;':''}">${a.actionText}</span><span style="font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,0.06);color:var(--text3);white-space:nowrap;flex-shrink:0;">${goalLabel}</span></div>`;
+  }).join('');
 }
 function renderTodosPreview(){
   const el=document.getElementById('todos-preview');if(!el)return;
@@ -1754,7 +1801,7 @@ function updateTicker(){
   else{stage.innerHTML='';stage.appendChild(makeRow());}
 }
 function startTicker(){updateTicker();if(tickerTimer)clearInterval(tickerTimer);tickerTimer=setInterval(updateTicker,5000);}
-window.addEventListener('goals-changed',()=>{tickerIdx=0;updateTicker();});
+window.addEventListener('goals-changed',()=>{tickerIdx=0;updateTicker();renderDailyActionsWidget();});
 /* ── DAY RING ── */
 function getDayPhase(h){
   if(h>=6&&h<12)return{name:'Mañana',color:'#F2C063'};
