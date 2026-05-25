@@ -566,14 +566,14 @@ canvas{width:100%!important;display:block;}
   </div>
   <button class="btn-ghost" onclick="getAI('goals')" style="margin-bottom:10px;font-size:12px;">Calcular qué hacer hoy ↗</button>
   <div class="ai-box" id="ai-goals" style="display:none;"><div class="ai-title">Plan diario IA</div><div class="ai-output" id="ai-goals-text"></div></div>
-</div>
-<!-- TO-DO -->
-<div class="section" id="section-todos">
-  <div class="card"><div class="card-title">Tareas de hoy</div><div id="todos-list"></div>
+  <!-- TO-DO (fusionado) -->
+  <div class="card" style="margin-top:4px;">
+    <div class="card-title">Tareas de hoy</div>
+    <div id="todos-list"></div>
     <div class="add-row"><input type="text" id="todo-input" placeholder="Nueva tarea..." onkeydown="if(event.key==='Enter')addTodo()"/><button onclick="addTodo()">+ Agregar</button></div>
+    <div style="margin-top:8px;"><button class="btn-ghost" onclick="getAI('todos')" style="font-size:12px;">Priorizar tareas ↗</button></div>
+    <div class="ai-box" id="ai-todos" style="display:none;margin-top:10px;"><div class="ai-title">Priorización IA</div><div class="ai-output" id="ai-todos-text"></div></div>
   </div>
-  <button class="btn-ghost" onclick="getAI('todos')" style="margin-bottom:10px;font-size:12px;">Priorizar tareas ↗</button>
-  <div class="ai-box" id="ai-todos" style="display:none;"><div class="ai-title">Priorización IA</div><div class="ai-output" id="ai-todos-text"></div></div>
 </div>
 <!-- PROYECTOS -->
 <div class="section" id="section-projects">
