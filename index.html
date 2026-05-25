@@ -626,24 +626,19 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();
+  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();
 }
-function switchTab(name,btn){
-  document.querySelectorAll('.tab,.nav-btn').forEach(t=>t.classList.remove('active'));
+function switchTab(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  // activate matching buttons in both sidebar and mobile tabs
-  document.querySelectorAll('.tab,.nav-btn').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+name+"'"))t.classList.add('active');});
-  // sync bottom tab bar
   document.querySelectorAll('.btab').forEach(t=>t.classList.remove('active'));
   const bt=document.getElementById('btab-'+name);if(bt)bt.classList.add('active');
-  document.getElementById('section-'+name).classList.add('active');
-  if(name==='peso')setTimeout(renderPesoChart,50);
+  const sec=document.getElementById('section-'+name);if(sec)sec.classList.add('active');
+  if(name==='inicio'){renderTodosPreview();renderProjects();}
   if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
   if(name==='sleep')setTimeout(renderSleepChart,50);
-  if(name==='comidas'){renderMeals();setTimeout(renderKcalChart,50);}
-  if(name==='habitos')setTimeout(renderHabitsChart,50);
-  if(name==='agua'){renderWater();setTimeout(renderWaterChart,50);}
-  if(name==='suplementos')renderSupplements();
+  if(name==='nutricion'){renderMeals();renderWater();setTimeout(()=>{renderKcalChart();renderWaterChart();},50);}
+  if(name==='habitos'){renderHabits();renderSupplements();setTimeout(renderHabitsChart,50);}
+  if(name==='goals'){renderGoals();renderTodos();}
 }
 function renderStrip(){
   const tm=S.meals.filter(m=>m.date===today());
@@ -849,7 +844,7 @@ function renderMeals(){
   document.getElementById('kcal-consumed').textContent=tk.toLocaleString();
   const rem=3000-tk,remEl=document.getElementById('kcal-remaining');
   if(rem>0){remEl.textContent='Faltan '+rem.toLocaleString()+' kcal';remEl.style.color='var(--text2)';}else{remEl.textContent='Objetivo cumplido!';remEl.style.color='var(--green)';}
-  document.getElementById('kcal-ring').style.strokeDashoffset=188-(188*Math.min(1,tk/3000));
+  const kr=document.getElementById('kcal-ring');if(kr)kr.style.strokeDashoffset=+(238.8*(1-Math.min(1,tk/3000))).toFixed(1);
   document.getElementById('m-prot').textContent=tp;document.getElementById('m-carb').textContent=tc;document.getElementById('m-fat').textContent=tf;
   const lc=document.getElementById('meals-list-card'),ml=document.getElementById('meals-list');
   if(!tm.length){lc.style.display='none';return;}lc.style.display='block';
@@ -904,7 +899,7 @@ function processGoalStreak(){
   renderStreak(data.count);
 }
 function renderStreak(count){
-  const el=document.getElementById('sidebar-streak');if(!el)return;
+  const el=document.getElementById('header-streak');if(!el)return;
   if(count<1){el.style.display='none';return;}
   el.style.display='flex';
   const isHot=count>=3;
@@ -1008,8 +1003,9 @@ async function addGoalTomorrowPolish(){
 function addTodo(){const t=document.getElementById('todo-input').value.trim();if(!t)return;S.todos.push({text:t,done:false,date:today()});document.getElementById('todo-input').value='';saveState();renderTodos();}
 function renderTodos(){
   const el=document.getElementById('todos-list'),items=S.todos.filter(t=>t.date===today()||!t.done);
-  if(!items.length){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin tareas.</p>';return;}
-  el.innerHTML=items.map(t=>{const ri=S.todos.indexOf(t);return'<div class="list-item"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;" '+(t.done?'checked':'')+' onchange="S.todos['+ri+'].done=this.checked;saveState();renderTodos();"/><span style="flex:1;font-size:13px;color:var(--text);'+(t.done?'text-decoration:line-through;color:var(--text3)':'')+'">'+t.text+'</span><button class="del-btn" onclick="S.todos.splice('+ri+',1);saveState();renderTodos();">x</button></div>';}).join('');
+  if(!items.length){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin tareas.</p>';}
+  else{el.innerHTML=items.map(t=>{const ri=S.todos.indexOf(t);return'<div class="list-item"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;" '+(t.done?'checked':'')+' onchange="S.todos['+ri+'].done=this.checked;saveState();renderTodos();"/><span style="flex:1;font-size:13px;color:var(--text);'+(t.done?'text-decoration:line-through;color:var(--text3)':'')+'">'+t.text+'</span><button class="del-btn" onclick="S.todos.splice('+ri+',1);saveState();renderTodos();">x</button></div>';}).join('');}
+  renderTodosPreview();
 }
 function addProject(){const n=document.getElementById('proj-input').value.trim();if(!n)return;S.projects.push({name:n,status:'dev',desc:'',tasks:''});document.getElementById('proj-input').value='';saveState();renderProjects();}
 function renderProjects(){
@@ -1336,7 +1332,10 @@ function renderWater(){
   const reached=totalMl>=WATER_GOAL_ML;
   const ring=document.getElementById('water-ring');
   if(ring){ring.setAttribute('stroke-dashoffset',offset);ring.setAttribute('stroke',reached?'var(--green)':'#7DD3FC');}
-  const gn=document.getElementById('water-glasses-num');if(gn)gn.textContent=Math.floor(totalMl/200);
+  const glasses=Math.floor(totalMl/200);
+  const segBar=document.getElementById('water-seg-bar');
+  if(segBar){segBar.querySelectorAll('.water-seg').forEach((s,i)=>{s.classList.remove('done','over');if(i<Math.min(glasses,8))s.classList.add(reached?'over':'done');});}
+  const gn=document.getElementById('water-glasses-num');if(gn)gn.textContent=glasses;
   const mt=document.getElementById('water-ml-total');if(mt)mt.textContent=totalMl.toLocaleString();
   const rem=document.getElementById('water-remaining');
   if(rem){const r=WATER_GOAL_ML-totalMl;if(r>0){rem.textContent='Faltan '+r+' ml';rem.style.color='var(--text2)';}else{rem.textContent='Superado en '+Math.abs(r)+' ml';rem.style.color='var(--green)';}}
