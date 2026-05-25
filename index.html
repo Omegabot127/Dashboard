@@ -245,39 +245,16 @@ canvas{width:100%!important;display:block;}
 </style>
 </head>
 <body>
+<!-- APP HEADER -->
+<div class="app-header">
+  <div class="app-header-left">
+    <span class="app-header-name">Nico</span>
+    <div class="header-streak" id="header-streak" style="display:none;"></div>
+  </div>
+  <div id="today-date" class="date-str"></div>
+</div>
 <div class="app">
 <div class="app-shell">
-<!-- SIDEBAR -->
-<div class="app-sidebar">
-  <div class="logo">Nico</div>
-  <div class="date-str" id="today-date"></div>
-  <div class="sidebar-streak" id="sidebar-streak" style="display:none;"></div>
-  <button class="nav-btn active" onclick="switchTab('inicio',this)">Inicio</button>
-  <button class="nav-btn" onclick="switchTab('habitos',this)">Hábitos</button>
-  <button class="nav-btn" onclick="switchTab('peso',this)">Peso</button>
-  <button class="nav-btn" onclick="switchTab('workout',this)">Workout</button>
-  <button class="nav-btn" onclick="switchTab('sleep',this)">Sleep</button>
-  <button class="nav-btn" onclick="switchTab('comidas',this)">Comidas</button>
-  <button class="nav-btn" onclick="switchTab('agua',this)">Agua</button>
-  <button class="nav-btn" onclick="switchTab('goals',this)">Goals</button>
-  <button class="nav-btn" onclick="switchTab('suplementos',this)">Suplementos</button>
-  <button class="nav-btn" onclick="switchTab('todos',this)">To-do</button>
-  <button class="nav-btn" onclick="switchTab('projects',this)">Proyectos</button>
-</div>
-<!-- MOBILE TABS -->
-<div class="mobile-tabs">
-  <button class="tab active" onclick="switchTab('inicio',this)">Inicio</button>
-  <button class="tab" onclick="switchTab('habitos',this)">Hábitos</button>
-  <button class="tab" onclick="switchTab('peso',this)">Peso</button>
-  <button class="tab" onclick="switchTab('workout',this)">Workout</button>
-  <button class="tab" onclick="switchTab('sleep',this)">Sleep</button>
-  <button class="tab" onclick="switchTab('comidas',this)">Comidas</button>
-  <button class="tab" onclick="switchTab('agua',this)">Agua</button>
-  <button class="tab" onclick="switchTab('goals',this)">Goals</button>
-  <button class="tab" onclick="switchTab('suplementos',this)">Suplementos</button>
-  <button class="tab" onclick="switchTab('todos',this)">To-do</button>
-  <button class="tab" onclick="switchTab('projects',this)">Proyectos</button>
-</div>
 <!-- MAIN CONTENT -->
 <div class="app-main">
 <!-- INICIO -->
