@@ -238,10 +238,10 @@ canvas{width:100%!important;display:block;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(10,10,11,0) 0%,rgba(10,10,11,0.94) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
 .btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:520px;}
-.btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px 8px;border-radius:13px;border:1px solid transparent;background:none;cursor:pointer;color:rgba(255,255,255,0.42);font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.02em;line-height:1;transition:all .15s;}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:9px 4px 8px;border-radius:13px;border:1px solid transparent;background:none;cursor:pointer;color:rgba(255,255,255,0.35);font-family:var(--font);font-size:10px;font-weight:600;letter-spacing:.02em;line-height:1;transition:all .15s;}
 .btab svg{flex-shrink:0;}
-.btab:hover{color:rgba(255,255,255,0.85);}
-.btab.active{color:#fff;background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.10);}
+.btab:hover{color:rgba(255,255,255,0.7);}
+.btab.active{color:var(--accent);background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.10);}
 </style>
 </head>
 <body>
@@ -485,14 +485,40 @@ canvas{width:100%!important;display:block;}
 </div>
 <!-- SLEEP -->
 <div class="section" id="section-sleep">
-  <div class="card"><div class="card-title">Registro de hoy</div>
-    <div class="slider-row"><span class="slider-label">Horas</span><input type="range" min="2" max="12" step="0.5" value="7.5" id="s-hours" oninput="document.getElementById('s-hours-v').textContent=parseFloat(this.value).toFixed(1)"/><span class="slider-val" id="s-hours-v">7.5</span></div>
-    <div class="slider-row"><span class="slider-label">Calidad</span><input type="range" min="1" max="10" step="1" value="7" id="s-qual" oninput="document.getElementById('s-qual-v').textContent=this.value"/><span class="slider-val" id="s-qual-v">7</span></div>
-    <div class="slider-row"><span class="slider-label">Energía</span><input type="range" min="1" max="10" step="1" value="7" id="s-energy" oninput="document.getElementById('s-energy-v').textContent=this.value"/><span class="slider-val" id="s-energy-v">7</span></div>
-    <div style="display:flex;gap:8px;margin-top:10px;"><button onclick="saveSleep()">Guardar ↗</button><button class="btn-ghost" onclick="getAI('sleep')">Analizar ↗</button></div>
+  <!-- PANTALLA AWAKE -->
+  <div id="sleep-awake-screen">
+    <div class="card" id="sleep-rec-card">
+      <div class="card-title">Hora recomendada para dormir</div>
+      <div id="sleep-rec-time" style="font-size:40px;font-weight:300;color:var(--text);font-family:'Courier New',monospace;line-height:1;margin-bottom:6px;">23:00</div>
+      <div id="sleep-rec-label" style="font-size:12px;color:var(--text2);">Sin historial aún — hora sugerida</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Últimas sesiones</div>
+      <div id="sleep-sessions-list"><p style="font-size:12px;color:var(--text3);padding:4px 0;">Sin sesiones registradas.</p></div>
+    </div>
+    <button onclick="startSleep()" style="width:100%;padding:18px;font-size:16px;font-weight:500;background:var(--accent);color:var(--bg);border:none;border-radius:10px;cursor:pointer;font-family:var(--font);letter-spacing:.03em;margin-bottom:10px;">🌙 Ir a dormir</button>
+    <div class="card" id="sleep-chart-card" style="display:none;"><div class="card-title">Horas de sueño — 14 días</div><canvas id="sleep-chart" height="140"></canvas></div>
+    <div class="ai-box" id="ai-sleep" style="display:none;"><div class="ai-title">Análisis IA</div><div class="ai-output" id="ai-sleep-text"></div></div>
   </div>
-  <div class="card" id="sleep-chart-card" style="display:none;"><div class="card-title">Horas de sueño — 14 días</div><canvas id="sleep-chart" height="140"></canvas></div>
-  <div class="ai-box" id="ai-sleep" style="display:none;"><div class="ai-title">Análisis IA</div><div class="ai-output" id="ai-sleep-text"></div></div>
+  <!-- PANTALLA SLEEPING -->
+  <div id="sleep-sleeping-screen" style="display:none;">
+    <div class="card" style="text-align:center;padding:2rem 1.25rem;">
+      <div style="font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;">Durmiendo desde las</div>
+      <div id="sleep-start-time" style="font-size:52px;font-weight:300;color:var(--text);font-family:'Courier New',monospace;line-height:1;margin-bottom:10px;">--:--</div>
+      <div id="sleep-elapsed" style="font-size:22px;color:var(--text2);font-family:'Courier New',monospace;margin-bottom:36px;">0h 0m</div>
+      <div id="sleep-quality-row" style="display:none;margin-bottom:28px;">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px;">¿Cómo dormiste?</div>
+        <div style="display:flex;justify-content:center;gap:6px;">
+          <button onclick="wakeUp(1)" title="Pésimo" style="font-size:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;cursor:pointer;padding:10px;line-height:1;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">😴</button>
+          <button onclick="wakeUp(2)" title="Regular" style="font-size:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;cursor:pointer;padding:10px;line-height:1;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">😑</button>
+          <button onclick="wakeUp(3)" title="Normal" style="font-size:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;cursor:pointer;padding:10px;line-height:1;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">😊</button>
+          <button onclick="wakeUp(4)" title="Bueno" style="font-size:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;cursor:pointer;padding:10px;line-height:1;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">😄</button>
+          <button onclick="wakeUp(5)" title="Excelente" style="font-size:34px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:10px;cursor:pointer;padding:10px;line-height:1;transition:background .15s;" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background='var(--bg3)'">🚀</button>
+        </div>
+      </div>
+      <button id="sleep-wake-btn" onclick="showSleepQualityOptions()" style="width:100%;padding:18px;font-size:16px;font-weight:500;background:var(--accent);color:var(--bg);border:none;border-radius:10px;cursor:pointer;font-family:var(--font);letter-spacing:.03em;">☀️ Me desperté</button>
+    </div>
+  </div>
 </div>
 <!-- NUTRICIÓN -->
 <div class="section" id="section-nutricion">
@@ -635,7 +661,7 @@ function switchTab(name){
   const sec=document.getElementById('section-'+name);if(sec)sec.classList.add('active');
   if(name==='inicio'){renderTodosPreview();renderProjects();}
   if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
-  if(name==='sleep')setTimeout(renderSleepChart,50);
+  if(name==='sleep')setTimeout(renderSleepScreen,50);
   if(name==='nutricion'){renderMeals();renderWater();setTimeout(()=>{renderKcalChart();renderWaterChart();},50);}
   if(name==='habitos'){renderHabits();renderSupplements();setTimeout(renderHabitsChart,50);}
   if(name==='goals'){renderGoals();renderTodos();}
@@ -832,6 +858,91 @@ function renderSleepChart(){
   const card=document.getElementById('sleep-chart-card');if(S.sleep.length<2){card.style.display='none';return;}card.style.display='block';
   const data=S.sleep.slice(0,14).reverse();if(CHARTS.sleep)CHARTS.sleep.destroy();
   CHARTS.sleep=new Chart(document.getElementById('sleep-chart').getContext('2d'),{type:'line',data:{labels:data.map(s=>s.date),datasets:[{data:data.map(s=>s.hours),borderColor:AC(),backgroundColor:'transparent',borderWidth:2,pointRadius:3,tension:.3}]},options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:12,ticks:{color:T2(),callback:v=>v+'h'},grid:{color:BD()}},x:{ticks:{color:T2(),maxRotation:45},grid:{display:false}}}}});
+}
+/* ── SLEEP STATE SYSTEM ── */
+const SLEEP_STATE_KEY='sleep_state_v1';
+const SLEEP_SESSIONS_KEY='sleep_sessions_v1';
+function getSleepState(){return lsGet(SLEEP_STATE_KEY)||{status:'awake',sleepStart:null};}
+function saveSleepState(st){lsSet(SLEEP_STATE_KEY,st);}
+function getSleepSessions(){return lsGet(SLEEP_SESSIONS_KEY)||[];}
+function saveSleepSessions(arr){lsSet(SLEEP_SESSIONS_KEY,arr);}
+const QUALITY_LABELS=['','Pésimo','Regular','Normal','Bueno','Excelente'];
+let sleepElapsedTimer=null;
+function startSleep(){
+  saveSleepState({status:'sleeping',sleepStart:new Date().toISOString()});
+  renderSleepScreen();
+}
+function showSleepQualityOptions(){
+  document.getElementById('sleep-quality-row').style.display='block';
+  document.getElementById('sleep-wake-btn').style.display='none';
+}
+function wakeUp(quality){
+  const st=getSleepState();if(st.status!=='sleeping')return;
+  const now=new Date(),sleepStart=new Date(st.sleepStart);
+  const hours=+((now-sleepStart)/3600000).toFixed(2);
+  const session={date:getActiveDateString(),sleepStart:st.sleepStart,wakeTime:now.toISOString(),hours,quality,qualityLabel:QUALITY_LABELS[quality]};
+  const sessions=getSleepSessions();sessions.unshift(session);
+  if(sessions.length>30)sessions.length=30;
+  saveSleepSessions(sessions);
+  saveSleepState({status:'awake',sleepStart:null});
+  S.sleep.unshift({date:today(),hours:Math.round(hours*2)/2,qual:Math.round(quality*2),energy:quality*2});
+  if(S.sleep.length>30)S.sleep=S.sleep.slice(0,30);
+  saveState();
+  if(sleepElapsedTimer){clearInterval(sleepElapsedTimer);sleepElapsedTimer=null;}
+  renderSleepScreen();renderStrip();
+}
+function updateSleepElapsed(){
+  const st=getSleepState();if(st.status!=='sleeping'||!st.sleepStart)return;
+  const diff=new Date()-new Date(st.sleepStart);
+  const h=Math.floor(diff/3600000),m=Math.floor((diff%3600000)/60000);
+  const el=document.getElementById('sleep-elapsed');if(el)el.textContent=h+'h '+m+'m';
+}
+function getRecommendedSleepTime(){
+  const sessions=getSleepSessions().slice(0,7);if(!sessions.length)return'23:00';
+  let total=0,count=0;
+  sessions.forEach(s=>{if(!s.sleepStart)return;const d=new Date(s.sleepStart);let m=d.getHours()*60+d.getMinutes();if(d.getHours()<6)m+=1440;total+=m;count++;});
+  if(!count)return'23:00';
+  const avg=Math.round(total/count),h=Math.floor(avg/60)%24,m=avg%60;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+}
+function renderSleepScreen(){
+  const st=getSleepState();
+  const awake=document.getElementById('sleep-awake-screen');
+  const sleeping=document.getElementById('sleep-sleeping-screen');
+  if(!awake||!sleeping)return;
+  if(st.status==='sleeping'){
+    awake.style.display='none';sleeping.style.display='block';
+    const startEl=document.getElementById('sleep-start-time');
+    if(startEl&&st.sleepStart){const d=new Date(st.sleepStart);startEl.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');}
+    const qr=document.getElementById('sleep-quality-row');if(qr)qr.style.display='none';
+    const wb=document.getElementById('sleep-wake-btn');if(wb)wb.style.display='block';
+    updateSleepElapsed();
+    if(sleepElapsedTimer)clearInterval(sleepElapsedTimer);
+    sleepElapsedTimer=setInterval(updateSleepElapsed,60000);
+  } else {
+    awake.style.display='block';sleeping.style.display='none';
+    if(sleepElapsedTimer){clearInterval(sleepElapsedTimer);sleepElapsedTimer=null;}
+    const recEl=document.getElementById('sleep-rec-time');if(recEl)recEl.textContent=getRecommendedSleepTime();
+    const sessions=getSleepSessions();
+    const recLabel=document.getElementById('sleep-rec-label');
+    if(recLabel)recLabel.textContent=sessions.length?'Promedio de tus últimas '+Math.min(sessions.length,7)+' sesiones':'Sin historial aún — hora sugerida';
+    renderSleepSessionsList();
+    renderSleepChart();
+  }
+}
+function renderSleepSessionsList(){
+  const el=document.getElementById('sleep-sessions-list');if(!el)return;
+  const sessions=getSleepSessions().slice(0,5);
+  if(!sessions.length){el.innerHTML='<p style="font-size:12px;color:var(--text3);padding:4px 0;">Sin sesiones registradas.</p>';return;}
+  const qEmojis=['','😴','😑','😊','😄','🚀'];
+  el.innerHTML=sessions.map(s=>{
+    const hF=Math.floor(s.hours),mF=Math.round((s.hours-hF)*60);
+    const sD=new Date(s.sleepStart),wD=new Date(s.wakeTime);
+    const sStr=String(sD.getHours()).padStart(2,'0')+':'+String(sD.getMinutes()).padStart(2,'0');
+    const wStr=String(wD.getHours()).padStart(2,'0')+':'+String(wD.getMinutes()).padStart(2,'0');
+    const qColor=s.quality>=4?'var(--green)':s.quality>=3?'var(--text2)':'var(--red)';
+    return'<div class="list-item"><span style="font-size:11px;color:var(--text3);min-width:100px;">'+sStr+' → '+wStr+'</span><span style="flex:1;font-size:13px;color:var(--text);">'+hF+'h '+mF+'m</span><span style="font-size:20px;line-height:1;margin-right:6px;">'+qEmojis[s.quality]+'</span><span style="font-size:11px;color:'+qColor+';min-width:58px;text-align:right;">'+s.qualityLabel+'</span></div>';
+  }).join('');
 }
 function addMeal(){
   const name=document.getElementById('meal-name').value.trim(),kcal=parseInt(document.getElementById('meal-kcal').value)||0;if(!name||!kcal)return;
