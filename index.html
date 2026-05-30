@@ -352,14 +352,6 @@ canvas{width:100%!important;display:block;}
     </div>
     <div id="todos-preview"></div>
   </div>
-  <!-- PROYECTOS -->
-  <div class="card">
-    <div class="card-title">Proyectos</div>
-    <div id="projects-list"></div>
-    <div class="add-row" style="margin-top:6px;"><input type="text" id="proj-input" placeholder="Nombre del proyecto..."/><button onclick="addProject()">+ Agregar</button></div>
-    <div style="margin-top:8px;"><button class="btn-ghost" onclick="getAI('projects')" style="font-size:12px;">En qué enfocarme hoy ↗</button></div>
-    <div class="ai-box" id="ai-projects" style="display:none;margin-top:10px;"><div class="ai-title">Foco del día IA</div><div class="ai-output" id="ai-projects-text"></div></div>
-  </div>
   <div class="chat-card">
     <div class="chat-header">
       <div><div class="chat-header-title">Coach personal IA</div><div class="chat-header-sub">Conoce todos tus datos en tiempo real</div></div>
@@ -367,10 +359,10 @@ canvas{width:100%!important;display:block;}
     </div>
     <div class="chat-messages" id="chat-messages"></div>
     <div class="quick-btns">
-      <button class="qbtn" onclick="askQuick('Dame el resumen completo de mi día.')">Resumen</button>
-      <button class="qbtn" onclick="askQuick('Qué debería comer para llegar a mis 3000 kcal hoy?')">Qué comer</button>
-      <button class="qbtn" onclick="askQuick('En qué proyecto me enfoco hoy?')">Proyectos</button>
-      <button class="qbtn" onclick="askQuick('Cómo va mi progreso semanal?')">Progreso</button>
+      <button class="qbtn" onclick="askQuick('¿Qué me falta hacer hoy?')">¿Qué me falta?</button>
+      <button class="qbtn" onclick="askQuick('¿Cómo voy con mis goals?')">Mis goals</button>
+      <button class="qbtn" onclick="askQuick('¿Qué debería comer?')">¿Qué comer?</button>
+      <button class="qbtn" onclick="askQuick('Dame motivación')">Motivación</button>
     </div>
     <div class="chat-footer">
       <input type="text" id="chat-input" placeholder="Pregúntame algo..." onkeydown="if(event.key==='Enter')sendChat()"/>
@@ -705,7 +697,7 @@ canvas{width:100%!important;display:block;}
 </div>
 <script>
 const SKEY='nico_dash_v6';
-let S={sleep:[],meals:[],goals:[{text:'Llegar a 75 kg',pct:20},{text:'Entrenar 5x semana',pct:60},{text:'3000 kcal diarias',pct:40}],todos:[],projects:[{name:'OMEGA',status:'active',desc:'BTC/USD prediction bot — FastAPI en Railway',tasks:'Mantener v5.7, optimizar señales'},{name:'GeoPulse',status:'dev',desc:'Bot autónomo de trading geopolítico 24/7',tasks:'Clasificación eventos, ejecución Polymarket'}],habits:[{name:'Entrenar',log:[]},{name:'3000 kcal',log:[]},{name:'Dormir 7h+',log:[]},{name:'Sin azúcar',log:[]}],peso:[],wAttended:{},wChecked:{}};
+let S={sleep:[],meals:[],goals:[{text:'Llegar a 75 kg',pct:20},{text:'Entrenar 5x semana',pct:60},{text:'3000 kcal diarias',pct:40}],todos:[],habits:[{name:'Entrenar',log:[]},{name:'3000 kcal',log:[]},{name:'Dormir 7h+',log:[]},{name:'Sin azúcar',log:[]}],peso:[],wAttended:{},wChecked:{}};
 const CHARTS={};let chatLoading=false,summaryLoaded=false;
 let viewYear=new Date().getFullYear(),viewMonth=new Date().getMonth(),selectedDateKey=null;
 const MONTHS_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -725,14 +717,14 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#e8805a';} function T2(){return'#8a7060';} function BD(){return'#2e2419';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderProjects();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();renderDailyActionsWidget();
+  renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();renderDailyActionsWidget();
 }
 function switchTab(name){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.btab').forEach(t=>t.classList.remove('active'));
   const bt=document.getElementById('btab-'+name);if(bt)bt.classList.add('active');
   const sec=document.getElementById('section-'+name);if(sec)sec.classList.add('active');
-  if(name==='inicio'){renderTodosPreview();renderProjects();renderDailyActionsWidget();}
+  if(name==='inicio'){renderTodosPreview();renderDailyActionsWidget();}
   if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
   if(name==='sleep')setTimeout(renderSleepScreen,50);
   if(name==='nutricion'){renderMeals();renderWater();setTimeout(()=>{renderKcalChart();renderWaterChart();},50);}
@@ -749,8 +741,27 @@ function renderStrip(){
 }
 function buildCtx(){
   const tm=S.meals.filter(m=>m.date===today()),kcal=tm.reduce((a,m)=>a+m.kcal,0);
-  const done=S.habits.filter(h=>h.log.includes(today())).map(h=>h.name).join(', ')||'ninguno';
-  return'Datos de Nico:\n- Objetivo: subir peso muscular, 3000 kcal/dia\n- Peso: '+(S.peso.length?S.peso[S.peso.length-1].kg+' kg':'sin registro')+'\n- Calorias hoy: '+kcal+'/3000\n- Habitos completados: '+done+'\n- Ultimo sueno: '+(S.sleep[0]?S.sleep[0].hours+'h, calidad '+S.sleep[0].qual+'/10':'sin registro')+'\n- Goals: '+S.goals.map(g=>g.text+(g.done?' [hecho]':g.queue?' [cola]':'')).join(' | ')+'\n- Proyectos: OMEGA (bot BTC/USD Railway v5.7), GeoPulse (bot geopolitico FastAPI)\n- Trader Polymarket, especialidad geopolitica';
+  const habitsDone=S.habits.filter(h=>h.log.includes(today())).length;
+  const lastSleep=getSleepSessions()[0];
+  const pesoActual=S.peso.length?S.peso[S.peso.length-1].kg+' kg':'sin registro';
+  // Acciones del día
+  const gad=getGoalActionsData();
+  const date=getActiveDateString();
+  const dayLog=gad.daily_logs[date]||{};
+  const allActions=[];
+  gad.goals.forEach(ge=>{
+    const sGoal=S.goals.find(g=>g.id===ge.id);
+    const goalText=sGoal?sGoal.text:'Goal';
+    (ge.actions||[]).forEach(a=>{allActions.push({text:a.text,done:!!dayLog[a.id],goal:goalText});});
+  });
+  const actionsDone=allActions.filter(a=>a.done).length;
+  const actionsLine=allActions.length?allActions.map(a=>(a.done?'[✓] ':'[ ] ')+a.text+' ('+a.goal+')').join('; '):'sin acciones definidas';
+  // Racha de entrenamiento
+  const now=new Date(),cy=now.getFullYear(),cm=now.getMonth();
+  let wStreak=0;const cd2=new Date(now);
+  while(true){const key=cd2.toISOString().split('T')[0],dow=cd2.getDay();if(isTD(dow)){if(S.wAttended[key])wStreak++;else break;}cd2.setDate(cd2.getDate()-1);if(cd2<new Date(cy,cm,1))break;}
+  const goalsLine=S.goals.filter(g=>!g.queue).map(g=>g.text+(g.done?' [completado]':' [en progreso]')).join(' | ');
+  return'Eres el coach personal de Nico. Tu único foco es ayudarle a cumplir sus goals y acciones diarias.\nDatos actuales:\n- Goals: '+goalsLine+'\n- Acciones de hoy: '+actionsDone+'/'+allActions.length+' completadas — '+actionsLine+'\n- Calorías hoy: '+kcal+'/3000\n- Hábitos completados: '+habitsDone+'/'+S.habits.length+'\n- Sueño última noche: '+(lastSleep?lastSleep.hours+'h calidad '+lastSleep.quality+'/5':'sin registro')+'\n- Peso actual: '+pesoActual+' (objetivo 75 kg)\n- Racha de entrenamiento: '+wStreak+' días\n\nCuando el usuario pregunta algo, responde siempre conectando con sus goals y acciones pendientes del día. Sé directo, motivador y concreto. Máximo 4 oraciones.';
 }
 async function callAI(messages,max){
   const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max||500,messages})});
@@ -760,7 +771,7 @@ async function loadSummary(){
   if(summaryLoaded)return;summaryLoaded=true;
   appendMsg('ai','...','summary-typing');
   try{
-    const r=await callAI([{role:'user',content:'Eres el coach personal de Nico. Es '+new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})+'.\n'+buildCtx()+'\nGenera un resumen de bienvenida: estado del dia + 2-3 prioridades concretas. Directo, sin saludo formal. Maximo 4 lineas.'}],350);
+    const r=await callAI([{role:'user',content:buildCtx()+'\nEs '+new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'})+'. Genera un resumen de bienvenida enfocado en: cuántas acciones del día están completadas, qué goal está más cerca de cumplirse, y la prioridad más importante del día. Sin saludo formal. Máximo 4 oraciones.'}],350);
     const el=document.getElementById('summary-typing');if(el){el.textContent=r;el.classList.add('summary-msg');}
   }catch(e){const el=document.getElementById('summary-typing');if(el)el.textContent='Listo para ayudarte. Que necesitas?';}
 }
@@ -772,7 +783,7 @@ function askQuick(msg){document.getElementById('chat-input').value=msg;sendChat(
 async function sendChat(){
   if(chatLoading)return;const input=document.getElementById('chat-input');const msg=input.value.trim();if(!msg)return;
   input.value='';appendMsg('user',msg);chatLoading=true;const typing=appendMsg('ai','...');
-  try{const r=await callAI([{role:'user',content:'Eres el coach personal de Nico. Responde en espanol, directo y conciso (max 5 oraciones).\n'+buildCtx()+'\nPregunta: '+msg}],600);typing.textContent=r;}
+  try{const r=await callAI([{role:'user',content:buildCtx()+'\nPregunta del usuario: '+msg}],600);typing.textContent=r;}
   catch(e){typing.textContent='Error de conexion.';}
   chatLoading=false;document.getElementById('chat-messages').scrollTop=99999;
 }
@@ -1443,14 +1454,10 @@ function renderTodos(){
   else{el.innerHTML=items.map(t=>{const ri=S.todos.indexOf(t);return'<div class="list-item"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;" '+(t.done?'checked':'')+' onchange="S.todos['+ri+'].done=this.checked;saveState();renderTodos();"/><span style="flex:1;font-size:13px;color:var(--text);'+(t.done?'text-decoration:line-through;color:var(--text3)':'')+'">'+t.text+'</span><button class="del-btn" onclick="S.todos.splice('+ri+',1);saveState();renderTodos();">x</button></div>';}).join('');}
   renderTodosPreview();
 }
-function addProject(){const n=document.getElementById('proj-input').value.trim();if(!n)return;S.projects.push({name:n,status:'dev',desc:'',tasks:''});document.getElementById('proj-input').value='';saveState();renderProjects();}
-function renderProjects(){
-  document.getElementById('projects-list').innerHTML=S.projects.map((p,i)=>'<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><input value="'+p.name+'" style="font-size:14px;font-weight:500;background:none;border:none;outline:none;font-family:var(--font);color:var(--text);" onchange="S.projects['+i+'].name=this.value;saveState();"/><span class="badge '+(p.status==='active'?'badge-active':'badge-dev')+'">'+(p.status==='active'?'Activo':'En desarrollo')+'</span></div><input value="'+p.desc+'" placeholder="Descripcion..." style="width:100%;font-size:12px;color:var(--text2);background:none;border:none;outline:none;font-family:var(--font);margin-bottom:5px;" onchange="S.projects['+i+'].desc=this.value;saveState();"/><input value="'+p.tasks+'" placeholder="Proximos pasos..." style="width:100%;font-size:12px;color:var(--text2);background:none;border:none;outline:none;font-family:var(--font);" onchange="S.projects['+i+'].tasks=this.value;saveState();"/></div>').join('');
-}
 async function getAI(section){
   const box=document.getElementById('ai-'+section),txt=document.getElementById('ai-'+section+'-text');box.style.display='block';txt.textContent='Analizando...';
   const tm=S.meals.filter(m=>m.date===today()),kcal=tm.reduce((a,m)=>a+m.kcal,0);
-  const prompts={sleep:'Experto en rendimiento. Sueno reciente: '+JSON.stringify(S.sleep.slice(0,7))+'. 1-2 recomendaciones en espanol.',comidas:'Nutricionista. Meta 3000 kcal/dia para subir musculo. Hoy lleva '+kcal+' kcal. Comidas: '+JSON.stringify(tm)+'. Sugiere que comer para completar. Max 4 oraciones en espanol.',goals:'Coach personal. Goals: '+JSON.stringify(S.goals)+'. Meta: subir peso muscular. Que hacer HOY? Bullets concretos en espanol.',todos:'Productividad. Nico es trader Polymarket + desarrolla OMEGA y GeoPulse. Pendientes: '+JSON.stringify(S.todos.filter(t=>!t.done).map(t=>t.text))+'. Top 3 mas importantes. En espanol.',projects:'Advisor. Proyectos: '+JSON.stringify(S.projects)+'. Trader geopolitico. Foco de hoy? Max 3 oraciones en espanol.'};
+  const prompts={sleep:'Experto en rendimiento. Sueno reciente: '+JSON.stringify(S.sleep.slice(0,7))+'. 1-2 recomendaciones en espanol.',comidas:'Nutricionista. Meta 3000 kcal/dia para subir musculo. Hoy lleva '+kcal+' kcal. Comidas: '+JSON.stringify(tm)+'. Sugiere que comer para completar. Max 4 oraciones en espanol.',goals:buildCtx()+'\nQué debería hacer HOY para avanzar en sus goals? Bullets concretos en español.',todos:buildCtx()+'\nPendientes: '+JSON.stringify(S.todos.filter(t=>!t.done).map(t=>t.text))+'. Top 3 más importantes conectando con sus goals. En español.'};
   try{const r=await callAI([{role:'user',content:prompts[section]}],500);txt.textContent=r;}catch(e){txt.textContent='Error al conectar.';}
 }
 function emojiIcon(e){return "";}
