@@ -6,7 +6,7 @@
 <title>Dashboard — Nico</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-:root{--bg:#0c0608;--bg2:#160a0e;--bg3:#1e1014;--bg4:#26141a;--border:#2a1418;--border2:#3a2028;--text:#f0e0e6;--text2:#907080;--text3:#5a3548;--accent:#d44060;--accent2:#b03050;--accent-bg:#250818;--green:#6fcf8a;--green-bg:#0d2015;--red:#e07070;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+:root{--bg:#0c0608;--bg2:#160a0e;--bg3:#1e1014;--bg4:#26141a;--border:#2a1418;--border2:#3a2028;--text:#f0e0e6;--text2:#907080;--text3:#5a3548;--accent:#d44060;--accent2:#b03050;--accent-bg:#250818;--accent-rgb:212,64,96;--green:#6fcf8a;--green-bg:#0d2015;--red:#e07070;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
 .app{width:100%;max-width:100%;padding:0;}
@@ -253,6 +253,21 @@ canvas{width:100%!important;display:block;}
 .habit2-del:hover{opacity:1!important;color:var(--red);}
 .habit2-add-btn{width:100%;font-size:12px;background:rgba(255,255,255,0.025);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px;color:var(--text2);cursor:pointer;font-family:var(--font);letter-spacing:.03em;transition:background .15s;}
 .habit2-add-btn:hover{background:rgba(255,255,255,0.05);color:var(--text);opacity:1;}
+/* HABIT STREAK BAR */
+.habit-streak-section{margin-top:5px;}
+.habit-streak-track{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;width:100%;}
+.habit-streak-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,rgba(212,64,96,0.3),var(--accent));width:0;transition:width .6s ease-out;}
+.habit-streak-fill.pulse{animation:streak-pulse 2s ease-in-out infinite;}
+@keyframes streak-pulse{0%,100%{opacity:1;box-shadow:0 0 4px var(--accent);}50%{opacity:.55;box-shadow:none;}}
+.habit-streak-label{font-size:10px;color:var(--text3);font-family:'Courier New',monospace;margin-top:3px;letter-spacing:.03em;}
+/* HABIT HEATMAP */
+.hm-tooltip{position:fixed;background:var(--bg3);border:0.5px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text);pointer-events:none;z-index:9999;white-space:nowrap;display:none;font-family:'Courier New',monospace;letter-spacing:.03em;box-shadow:0 4px 14px rgba(0,0,0,.5);}
+.hm-labels{display:flex;gap:3px;margin-bottom:4px;}
+.hm-label{width:12px;font-size:9px;color:var(--text3);font-family:'Courier New',monospace;text-align:center;}
+.hm-grid{display:flex;flex-direction:column;gap:3px;}
+.hm-row{display:flex;gap:3px;}
+.hm-cell{width:12px;height:12px;border-radius:3px;cursor:default;flex-shrink:0;transition:transform .1s;}
+.hm-cell:hover{transform:scale(1.45);position:relative;z-index:1;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(10,10,11,0) 0%,rgba(10,10,11,0.94) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
 .btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(20,20,22,0.72);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:520px;}
@@ -806,38 +821,75 @@ function renderHabits(){
   const seg=document.getElementById('habit-seg-row');
   if(seg)seg.innerHTML=total?S.habits.map(h=>'<div class="g-seg'+(h.log.includes(t)?' filled':'')+'"></div>').join(''):'';
   if(!total){el.innerHTML='<p style="font-size:13px;color:var(--text2);padding:8px 0;">Sin hábitos aún. Agrega uno.</p>';return;}
-  const last14=[];for(let d=13;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last14.push(dt.toLocaleDateString('es-CL'));}
+  const maxStreak=Math.max(1,...S.habits.map(h=>getStreak(h.log)));
   el.innerHTML=S.habits.map((h,i)=>{
     const done=h.log.includes(t),streak=getStreak(h.log);
-    const streakLabel=streak>0?'🔥 '+streak+' d':'—';
-    const dots=last14.map(d=>'<div class="dot'+(h.log.includes(d)?' done':'')+'"></div>').join('');
-    return`<div class="habit2-row${done?' is-done':''}"><div class="habit2-cb${done?' checked':''}" onclick="toggleHabit(${i})">${done?'✓':''}</div><div style="flex:1;min-width:0;"><div class="habit2-name">${h.name}</div><div class="dots-row" style="margin-top:5px;">${dots}</div></div><span class="habit2-streak${streak>=3?' hot':''}">${streakLabel}</span><button class="habit2-del" onclick="S.habits.splice(${i},1);saveState();renderHabits();">×</button></div>`;
+    const pct=Math.min(100,Math.round(streak/maxStreak*100));
+    const label=streak>0?streak+' días de racha':'sin racha aún';
+    return`<div class="habit2-row${done?' is-done':''}"><div class="habit2-cb${done?' checked':''}" onclick="toggleHabit(${i})">${done?'✓':''}</div><div style="flex:1;min-width:0;"><div class="habit2-name">${h.name}</div><div class="habit-streak-section"><div class="habit-streak-track"><div class="habit-streak-fill${streak>=7?' pulse':''}" data-w="${pct}" style="width:0%;"></div></div><div class="habit-streak-label">${label}</div></div></div><button class="habit2-del" onclick="S.habits.splice(${i},1);saveState();renderHabits();renderHabitsChart();">×</button></div>`;
   }).join('');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    el.querySelectorAll('.habit-streak-fill').forEach(bar=>{bar.style.width=bar.dataset.w+'%';});
+  }));
 }
 function renderHabitsChart(){
   const card=document.getElementById('habits-chart-card');
   if(!S.habits.length){card.style.display='none';return;}
   card.style.display='block';
-  const DOW=['D','L','M','X','J','V','S'];
-  const last7=[];
-  for(let d=6;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last7.push({str:dt.toLocaleDateString('es-CL'),dow:DOW[dt.getDay()]});}
-  const R=28,C=+(2*Math.PI*R).toFixed(1);
-  const rings=S.habits.map(h=>{
-    const done=last7.filter(d=>h.log.includes(d.str)).length;
-    const pct=Math.round(done/7*100);
-    const offset=+(C*(1-pct/100)).toFixed(1);
-    const nm=h.name.length>11?h.name.slice(0,11)+'…':h.name;
-    return`<div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:72px;"><svg width="72" height="72" viewBox="0 0 72 72"><circle cx="36" cy="36" r="${R}" fill="none" stroke="var(--bg4)" stroke-width="5"/><circle cx="36" cy="36" r="${R}" fill="none" stroke="#d44060" stroke-width="5" stroke-dasharray="${C}" stroke-dashoffset="${offset}" stroke-linecap="round" transform="rotate(-90 36 36)"/><text x="36" y="41" text-anchor="middle" font-size="13" fill="var(--text)" font-family="-apple-system,sans-serif">${pct}%</text></svg><span style="font-size:10px;color:var(--text2);text-align:center;letter-spacing:.04em;text-transform:uppercase;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span></div>`;
+  const total=S.habits.length;
+  const DAYS_FULL=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const DAYS_SHORT=['L','M','X','J','V','S','D'];
+  // Find start: Monday of 4 weeks ago (so grid ends this Sunday)
+  const now=new Date();
+  const daysFromMon=(now.getDay()+6)%7; // Mon=0..Sun=6
+  const startDate=new Date(now);
+  startDate.setDate(now.getDate()-daysFromMon-21);
+  startDate.setHours(0,0,0,0);
+  // Build 4 rows × 7 cols grid
+  const grid=[];
+  for(let w=0;w<4;w++){
+    const row=[];
+    for(let d=0;d<7;d++){
+      const dt=new Date(startDate);
+      dt.setDate(startDate.getDate()+w*7+d);
+      row.push({dateStr:dt.toLocaleDateString('es-CL'),date:dt,future:dt>now});
+    }
+    grid.push(row);
+  }
+  function hmColor(n,future){
+    if(future)return'rgba(255,255,255,0.02)';
+    if(n===0)return'rgba(255,255,255,0.04)';
+    if(n===1)return'rgba(var(--accent-rgb),0.25)';
+    if(n===2)return'rgba(var(--accent-rgb),0.50)';
+    if(n===3)return'rgba(var(--accent-rgb),0.75)';
+    return'var(--accent)';
+  }
+  const labelsHTML=DAYS_SHORT.map(l=>`<div class="hm-label">${l}</div>`).join('');
+  const rowsHTML=grid.map(row=>{
+    const cells=row.map(day=>{
+      const n=day.future?0:S.habits.filter(h=>h.log.includes(day.dateStr)).length;
+      const color=hmColor(n,day.future);
+      const dayNum=day.date.getDate();
+      const dayName=DAYS_FULL[day.date.getDay()];
+      const tip=day.future?'':dayName+' '+dayNum+' · '+n+'/'+total+' hábitos';
+      return`<div class="hm-cell" style="background:${color};" data-tip="${tip}" onmouseenter="hmShowTip(event,this)" onmouseleave="hmHideTip()"></div>`;
+    }).join('');
+    return`<div class="hm-row">${cells}</div>`;
   }).join('');
-  const barsHTML=S.habits.map(h=>{
-    const done=last7.filter(d=>h.log.includes(d.str)).length;
-    const pct=Math.round(done/7*100);
-    const nm=h.name.length>14?h.name.slice(0,14)+'…':h.name;
-    const cols=last7.map(d=>`<div style="display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="width:14px;height:30px;border-radius:3px;background:${h.log.includes(d.str)?'#d44060':'var(--bg4)'};"></div><span style="font-size:9px;color:var(--text3);">${d.dow}</span></div>`).join('');
-    return`<div style="display:flex;align-items:flex-end;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border);"><span style="font-size:11px;color:var(--text2);width:75px;flex-shrink:0;padding-bottom:17px;">${nm}</span><div style="display:flex;gap:4px;">${cols}</div><span style="font-size:12px;color:#d44060;margin-left:auto;padding-bottom:17px;font-weight:500;">${pct}%</span></div>`;
-  }).join('');
-  card.innerHTML=`<div class="card-title">Consistencia — últimos 7 días</div><div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-around;padding:12px 0 16px;">${rings}</div><div style="border-top:0.5px solid var(--border);padding-top:10px;">${barsHTML}</div>`;
+  // Legend
+  const legendHTML=`<div style="display:flex;align-items:center;gap:6px;margin-top:12px;"><span style="font-size:10px;color:var(--text3);font-family:'Courier New',monospace;">Menos</span>${[0,1,2,3,4].map(n=>`<div style="width:12px;height:12px;border-radius:3px;background:${hmColor(n,false)};flex-shrink:0;"></div>`).join('')}<span style="font-size:10px;color:var(--text3);font-family:'Courier New',monospace;">Más</span></div>`;
+  card.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><div class="card-title" style="margin-bottom:0;">Actividad — últimas 4 semanas</div><div style="font-size:10px;color:var(--text3);font-family:'Courier New',monospace;">${total} hábito${total!==1?'s':''}</div></div><div class="hm-labels">${labelsHTML}</div><div class="hm-grid">${rowsHTML}</div>${legendHTML}`;
 }
+function hmShowTip(e,el){
+  const tip=el.dataset.tip;if(!tip)return;
+  let tt=document.getElementById('hm-tooltip');
+  if(!tt){tt=document.createElement('div');tt.id='hm-tooltip';tt.className='hm-tooltip';document.body.appendChild(tt);}
+  tt.textContent=tip;tt.style.display='block';
+  const x=e.clientX+14,y=e.clientY-36;
+  tt.style.left=Math.min(x,window.innerWidth-180)+'px';
+  tt.style.top=Math.max(y,8)+'px';
+}
+function hmHideTip(){const tt=document.getElementById('hm-tooltip');if(tt)tt.style.display='none';}
 function savePeso(){const inp=document.getElementById('peso-input');if(!inp)return;const kg=parseFloat(inp.value);if(!kg||kg<30||kg>200)return;S.peso.push({date:today(),kg});inp.value='';saveState();renderStrip();renderPesoChart();}
 function renderPesoChart(){
   const card=document.getElementById('peso-chart-card');if(!card)return;if(S.peso.length<2){card.style.display='none';return;}card.style.display='block';
