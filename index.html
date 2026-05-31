@@ -336,9 +336,9 @@ canvas{width:100%!important;display:block;}
       <div class="wk-ring-stat-sub">días</div>
     </div>
     <div class="wk-ring-wrap">
-      <svg width="160" height="160" viewBox="0 0 160 160">
+      <svg width="160" height="160" viewBox="0 0 160 160" style="display:block;background:transparent;overflow:visible;">
         <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="10"/>
-        <circle id="wk-ring-progress" cx="80" cy="80" r="68" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="427" transform="rotate(-90 80 80)" style="filter:drop-shadow(0 0 8px rgba(0,255,136,0.6)) drop-shadow(0 0 16px rgba(0,255,136,0.3));"/>
+        <circle id="wk-ring-progress" cx="80" cy="80" r="68" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427.26" stroke-dashoffset="427.26" transform="rotate(-90 80 80)" style="filter:drop-shadow(0 0 8px rgba(0,255,136,0.6)) drop-shadow(0 0 16px rgba(0,255,136,0.3));"/>
       </svg>
       <div class="wk-ring-center">
         <div class="wk-ring-pct" id="wk-pct">0%</div>
@@ -791,9 +791,9 @@ function renderWkStats(){
   // ring animation
   const ring=document.getElementById('wk-ring-progress');
   if(ring){
-    const offset=+(427*(1-pct/100)).toFixed(1);
+    const C=427.26,offset=+(C-(C*pct/100)).toFixed(2);
     ring.style.transition='none';
-    ring.setAttribute('stroke-dashoffset','427');
+    ring.setAttribute('stroke-dashoffset',String(C));
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       ring.style.transition='stroke-dashoffset 1s ease-out';
       ring.setAttribute('stroke-dashoffset',String(offset));
