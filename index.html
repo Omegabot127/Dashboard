@@ -1415,7 +1415,7 @@ function renderWater(){
   const C=339.3,offset=+(C*(1-pct)).toFixed(1);
   const reached=totalMl>=WATER_GOAL_ML;
   const ring=document.getElementById('water-ring');
-  if(ring){ring.setAttribute('stroke',reached?'var(--accent)':'#00b4ff');ring.style.filter=reached?'drop-shadow(0 0 6px var(--accent))':'drop-shadow(0 0 6px #00b4ff) drop-shadow(0 0 12px rgba(0,180,255,0.4))';observeRing('water-ring',offset,339.3);}
+  if(ring){ring.setAttribute('stroke',reached?'var(--accent)':'#00b4ff');ring.style.filter=reached?'drop-shadow(0 0 6px var(--accent))':'drop-shadow(0 0 6px #00b4ff) drop-shadow(0 0 12px rgba(0,180,255,0.5))';observeRing('water-ring',offset,339.3);}
   const glasses=Math.floor(totalMl/200);
   const segBar=document.getElementById('water-seg-bar');
   if(segBar){segBar.querySelectorAll('.water-seg').forEach((s,i)=>{s.classList.remove('done','over');if(i<Math.min(glasses,8))s.classList.add(reached?'over':'done');});}
@@ -1447,10 +1447,10 @@ function renderWaterChart(){
 }
 /* ── DAY RING ── */
 function getDayPhase(h){
-  if(h>=6&&h<12)return{name:'Mañana',color:'#ffcc00',glow:'drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 14px rgba(255,204,0,0.4))'};
-  if(h>=12&&h<18)return{name:'Tarde',color:'#00b4ff',glow:'drop-shadow(0 0 8px #00b4ff) drop-shadow(0 0 14px rgba(0,180,255,0.4))'};
-  if(h>=18)return{name:'Noche',color:'#a78bfa',glow:'drop-shadow(0 0 8px #a78bfa) drop-shadow(0 0 14px rgba(167,139,250,0.4))'};
-  return{name:'Madrugada',color:'#666666',glow:'none'};
+  if(h>=6&&h<12)return{name:'Mañana',color:'#ffcc00',glow:'drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 16px rgba(255,204,0,0.6))'};
+  if(h>=12&&h<18)return{name:'Tarde',color:'#00b4ff',glow:'drop-shadow(0 0 8px #00b4ff) drop-shadow(0 0 16px rgba(0,180,255,0.6))'};
+  if(h>=18)return{name:'Noche',color:'#a78bfa',glow:'drop-shadow(0 0 8px #a78bfa) drop-shadow(0 0 16px rgba(167,139,250,0.6))'};
+  return{name:'Madrugada',color:'#6366f1',glow:'drop-shadow(0 0 8px #6366f1) drop-shadow(0 0 16px rgba(99,102,241,0.6))'};
 }
 function updateDayRing(){
   const now=new Date(),h=now.getHours(),m=now.getMinutes();
