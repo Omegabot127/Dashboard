@@ -90,11 +90,16 @@ input[type=range]{flex:1;accent-color:var(--accent);}
 .kcal-ring-wrap{display:flex;align-items:center;gap:18px;margin-bottom:14px;}
 .meal-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);}
 .meal-item:last-child{border-bottom:none;}
-.wk-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;}
-.wk-stat{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:8px 10px;}
-.wk-stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
-.wk-stat-val{font-size:16px;font-weight:400;color:var(--text);font-family:'Courier New',monospace;}
-.wk-stat-sub{font-size:9px;color:var(--text2);margin-top:1px;}
+.wk-ring-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:20px;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:32px;}
+.wk-ring-stat{text-align:center;flex:1;min-width:0;}
+.wk-ring-stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'Courier New',monospace;margin-bottom:6px;}
+.wk-ring-stat-num{font-size:28px;font-weight:400;color:var(--text);font-family:'Courier New',monospace;line-height:1;}
+.wk-ring-stat-num.hot{color:var(--accent);text-shadow:0 0 10px rgba(0,255,136,0.5);}
+.wk-ring-stat-sub{font-size:12px;color:var(--text2);margin-top:4px;}
+.wk-ring-wrap{position:relative;flex-shrink:0;width:160px;height:160px;}
+.wk-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+.wk-ring-pct{font-size:32px;font-weight:500;color:var(--text);font-family:'Courier New',monospace;line-height:1;}
+.wk-ring-month-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'Courier New',monospace;margin-top:5px;}
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .cal-title{font-size:12px;font-weight:500;color:var(--text);letter-spacing:.05em;}
 .cal-nav{background:none;border:0.5px solid var(--border2);border-radius:6px;padding:4px 10px;cursor:pointer;color:var(--text2);font-family:var(--font);font-size:13px;}
@@ -132,7 +137,7 @@ input[type=range]{flex:1;accent-color:var(--accent);}
 .ex-muscle{font-size:10px;padding:2px 7px;border-radius:6px;background:var(--bg4);color:var(--text2);white-space:nowrap;border:0.5px solid var(--border);}
 .goal-item{margin-bottom:12px;}
 canvas{width:100%!important;display:block;}
-@media(max-width:480px){.stats-strip,.wk-stats{grid-template-columns:repeat(2,1fr);}.metrics-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.stats-strip{grid-template-columns:repeat(2,1fr);}.metrics-grid{grid-template-columns:repeat(2,1fr);}.wk-ring-card{gap:16px;padding:16px;}.wk-ring-stat-num{font-size:22px;}.wk-ring-pct{font-size:26px;}}
 /* DAY RING */
 .day-ring-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:20px;overflow:hidden;}
 .day-ring-svg-wrap{flex-shrink:0;position:relative;width:140px;height:140px;}
@@ -323,11 +328,28 @@ canvas{width:100%!important;display:block;}
 </div>
 <!-- WORKOUT -->
 <div class="section" id="section-workout">
-  <div class="wk-stats">
-    <div class="wk-stat"><div class="wk-stat-label">Racha</div><div class="wk-stat-val" id="wk-streak">0</div><div class="wk-stat-sub">días seguidos</div></div>
-    <div class="wk-stat"><div class="wk-stat-label">Mejor racha</div><div class="wk-stat-val" id="wk-best">0</div><div class="wk-stat-sub">este mes</div></div>
-    <div class="wk-stat"><div class="wk-stat-label">Sesiones</div><div class="wk-stat-val" id="wk-sessions">0</div><div class="wk-stat-sub">este mes</div></div>
-    <div class="wk-stat"><div class="wk-stat-label">Asistencia</div><div class="wk-stat-val" id="wk-pct">—</div><div class="wk-stat-sub">del plan</div></div>
+  <!-- WORKOUT RING CARD -->
+  <div class="wk-ring-card">
+    <div class="wk-ring-stat">
+      <div class="wk-ring-stat-label">Racha</div>
+      <div class="wk-ring-stat-num" id="wk-streak">0</div>
+      <div class="wk-ring-stat-sub">días</div>
+    </div>
+    <div class="wk-ring-wrap">
+      <svg width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r="68" fill="none" stroke="rgba(0,255,136,0.08)" stroke-width="10"/>
+        <circle id="wk-ring-progress" cx="80" cy="80" r="68" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="427" stroke-dashoffset="427" transform="rotate(-90 80 80)" style="filter:drop-shadow(0 0 8px rgba(0,255,136,0.6)) drop-shadow(0 0 16px rgba(0,255,136,0.3));"/>
+      </svg>
+      <div class="wk-ring-center">
+        <div class="wk-ring-pct" id="wk-pct">0%</div>
+        <div class="wk-ring-month-label">Este mes</div>
+      </div>
+    </div>
+    <div class="wk-ring-stat">
+      <div class="wk-ring-stat-label">Sesiones</div>
+      <div class="wk-ring-stat-num" id="wk-sessions">0</div>
+      <div class="wk-ring-stat-sub">este mes</div>
+    </div>
   </div>
   <div class="card">
     <div class="cal-header"><button class="cal-nav" onclick="changeMonth(-1)">←</button><div class="cal-title" id="cal-title"></div><button class="cal-nav" onclick="changeMonth(1)">→</button></div>
@@ -756,14 +778,27 @@ function renderWkStats(){
   for(let d=1;d<=Math.min(days,now.getDate());d++){const dow=new Date(y,m,d).getDay();if(isTD(dow)){planned++;if(S.wAttended[dateISO(y,m,d)])attended++;}}
   let streak=0;const cd=new Date(now);
   while(true){const key=cd.toISOString().split('T')[0],dow=cd.getDay();if(isTD(dow)){if(S.wAttended[key])streak++;else break;}cd.setDate(cd.getDate()-1);if(cd<new Date(y,m,1))break;}
-  let best=0,cur=0;
-  for(let d=1;d<=days;d++){const dow=new Date(y,m,d).getDay();if(isTD(dow)){if(S.wAttended[dateISO(y,m,d)]){cur++;best=Math.max(best,cur);}else cur=0;}}
+  const pct=planned?Math.round(attended/planned*100):0;
+  // streak
   const streakEl=document.getElementById('wk-streak');
-  const prevSt=parseInt(streakEl?.textContent||0);
-  animateCounter(streakEl,prevSt,streak,700,streak>=3?' 🔥':'');
-  animateCounter(document.getElementById('wk-best'),0,best,700);
-  animateCounter(document.getElementById('wk-sessions'),0,attended,700);
-  const pctEl=document.getElementById('wk-pct');if(pctEl)pctEl.textContent=planned?Math.round(attended/planned*100)+'%':'—';
+  if(streakEl){streakEl.textContent=streak+(streak>=3?' 🔥':'');streakEl.className='wk-ring-stat-num'+(streak>=3?' hot':'');}
+  // sessions
+  const sessEl=document.getElementById('wk-sessions');
+  if(sessEl){const prev=parseInt(sessEl.textContent||0);animateCounter(sessEl,prev,attended,700);}
+  // pct text
+  const pctEl=document.getElementById('wk-pct');
+  if(pctEl)pctEl.textContent=pct+'%';
+  // ring animation
+  const ring=document.getElementById('wk-ring-progress');
+  if(ring){
+    const offset=+(427*(1-pct/100)).toFixed(1);
+    ring.style.transition='none';
+    ring.setAttribute('stroke-dashoffset','427');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      ring.style.transition='stroke-dashoffset 1s ease-out';
+      ring.setAttribute('stroke-dashoffset',String(offset));
+    }));
+  }
 }
 function changeMonth(dir){viewMonth+=dir;if(viewMonth>11){viewMonth=0;viewYear++;}if(viewMonth<0){viewMonth=11;viewYear--;}renderCalendar();}
 function renderCalendar(){
