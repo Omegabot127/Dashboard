@@ -216,9 +216,9 @@ canvas{width:100%!important;display:block;}
 .g-add-btn:hover{opacity:.85;}
 /* WATER SEG BAR */
 .water-seg-bar{display:flex;gap:3px;height:6px;margin:8px 0;}
-.water-seg{flex:1;height:100%;border-radius:2px;background:var(--bg4);}
-.water-seg.done{background:#7DD3FC;}
-.water-seg.over{background:var(--green);}
+.water-seg{flex:1;height:100%;border-radius:2px;background:rgba(0,180,255,0.08);}
+.water-seg.done{background:linear-gradient(90deg,#0066ff,#00b4ff);box-shadow:0 0 6px rgba(0,180,255,0.5);}
+.water-seg.over{background:var(--accent);box-shadow:0 0 6px var(--accent-glow);}
 /* SUPPLEMENTS */
 .supp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.06);margin-bottom:6px;transition:background .15s;}
 .supp-row:hover{background:rgba(255,255,255,0.055);}
@@ -352,8 +352,8 @@ canvas{width:100%!important;display:block;}
     </div>
     <div class="day-ring-svg-wrap">
       <svg width="140" height="140" viewBox="0 0 140 140">
-        <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
-        <circle id="dayRingProgress" cx="70" cy="70" r="58" fill="none" stroke="#00ff88" stroke-width="8" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4" transform="rotate(-90 70 70)"/>
+        <circle cx="70" cy="70" r="58" fill="none" stroke="rgba(0,180,255,0.08)" stroke-width="8"/>
+        <circle id="dayRingProgress" cx="70" cy="70" r="58" fill="none" stroke="#00b4ff" stroke-width="8" stroke-linecap="round" stroke-dasharray="364.4" stroke-dashoffset="364.4" transform="rotate(-90 70 70)" style="filter:drop-shadow(0 0 8px #00b4ff) drop-shadow(0 0 14px rgba(0,180,255,0.4));"/>
       </svg>
       <div class="day-ring-center">
         <div class="day-ring-time" id="dayRingTime">--:--</div>
@@ -604,8 +604,8 @@ canvas{width:100%!important;display:block;}
   <div class="card"><div class="card-title">Calorías de hoy</div>
     <div class="kcal-ring-wrap">
       <svg width="90" height="90" viewBox="0 0 90 90" style="flex-shrink:0;">
-        <circle cx="45" cy="45" r="38" fill="none" stroke="var(--bg4)" stroke-width="7"/>
-        <circle id="kcal-ring" cx="45" cy="45" r="38" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" transform="rotate(-90 45 45)"/>
+        <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(0,180,255,0.08)" stroke-width="7"/>
+        <circle id="kcal-ring" cx="45" cy="45" r="38" fill="none" stroke="#00b4ff" stroke-width="7" stroke-linecap="round" stroke-dasharray="238.8" stroke-dashoffset="238.8" transform="rotate(-90 45 45)" style="filter:drop-shadow(0 0 6px #00b4ff) drop-shadow(0 0 12px rgba(0,180,255,0.5));"/>
       </svg>
       <div><div style="font-size:26px;font-weight:400;color:var(--text);"><span id="kcal-consumed">0</span><span class="metric-unit"> kcal</span></div><div style="font-size:12px;color:var(--text2);margin-top:2px;">Objetivo: 3,000 kcal</div><div style="font-size:12px;margin-top:3px;font-weight:500;" id="kcal-remaining"></div></div>
     </div>
@@ -736,7 +736,7 @@ function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nul
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};S.goals=S.goals.map(g=>({text:g.text||'',done:g.done!==undefined?g.done:(g.pct>=100),queue:g.queue||false}));rolloverGoals();processGoalStreak();let _idc=false;S.goals=S.goals.map(g=>{if(!g.id){_idc=true;return{...g,id:'g_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,5)};}return g;});if(_idc)saveState();render();setTimeout(loadSummary,300);}
 function saveState(){lsSet(SKEY,S);}
-function AC(){return'#00ff88';} function T2(){return'#888888';} function BD(){return'#1e1e1e';}
+function AC(){return'#00ff88';} function T2(){return'rgba(255,255,255,0.4)';} function BD(){return'rgba(255,255,255,0.04)';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
   renderStrip();renderHabits();renderMeals();renderGoals();renderTodos();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();renderTodosPreview();renderDailyActionsWidget();
@@ -1255,17 +1255,17 @@ function renderSleepDualChart(){
     data:{
       labels,
       datasets:[
-        {type:'bar',label:'Horas',data:hoursData,backgroundColor:barColors,borderRadius:4,yAxisID:'yHours',order:2},
-        {type:'line',label:'Objetivo',data:Array(last14.length).fill(8),borderColor:'rgba(80,80,80,0.8)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,yAxisID:'yHours',order:3},
-        {type:'line',label:'Calidad',data:qualityData,borderColor:'var(--accent)',backgroundColor:'rgba(0,255,136,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:'var(--accent)',tension:.35,fill:false,yAxisID:'yQuality',order:1}
+        {type:'bar',label:'Horas',data:hoursData,backgroundColor:barColors,borderRadius:6,borderSkipped:false,yAxisID:'yHours',order:2},
+        {type:'line',label:'Objetivo',data:Array(last14.length).fill(8),borderColor:'rgba(255,255,255,0.12)',borderWidth:1,borderDash:[5,4],pointRadius:0,yAxisID:'yHours',order:3},
+        {type:'line',label:'Calidad',data:qualityData,borderColor:'#00b4ff',backgroundColor:'rgba(0,180,255,0.08)',borderWidth:2,pointRadius:3,pointBackgroundColor:'#00b4ff',tension:.35,fill:false,yAxisID:'yQuality',order:1}
       ]
     },
     options:{
       plugins:{legend:{display:false}},
       interaction:{mode:'index',intersect:false},
       scales:{
-        yHours:{type:'linear',position:'left',min:0,max:12,ticks:{color:'#444444',callback:v=>v+'h',font:{family:'\'Courier New\',monospace',size:10}},grid:{color:'rgba(30,30,30,0.8)'}},
-        yQuality:{type:'linear',position:'right',min:0,max:5,ticks:{color:'#444444',stepSize:1,callback:v=>v?v+'★':'',font:{family:'\'Courier New\',monospace',size:10}},grid:{display:false}}
+        yHours:{type:'linear',position:'left',min:0,max:12,ticks:{color:T2(),callback:v=>v+'h',font:{family:'\'Courier New\',monospace',size:10}},grid:{color:BD()}},
+        yQuality:{type:'linear',position:'right',min:0,max:5,ticks:{color:T2(),stepSize:1,callback:v=>v?v+'★':'',font:{family:'\'Courier New\',monospace',size:10}},grid:{display:false}}
       }
     }
   });
@@ -1296,7 +1296,7 @@ function renderKcalChart(){
   if(vals.every(v=>v===0)){card.style.display='none';return;}card.style.display='block';
   if(CHARTS.kcal)CHARTS.kcal.destroy();
   const labels=last7.map(d=>{const pts=d.split('/');return new Date(pts[2],pts[1]-1,pts[0]).toLocaleDateString('es-CL',{day:'numeric',month:'short'});});
-  CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=3000?'#00ff88':AC()),borderRadius:3},{data:Array(7).fill(3000),type:'line',borderColor:'#333333',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
+  CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=3000?'#00ff88':AC()),borderRadius:4,borderSkipped:false},{data:Array(7).fill(3000),type:'line',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
 }
 const ANTHROPIC_API_KEY='';
 function getTomorrowISO(){return getTomorrowDateString();}
@@ -1894,7 +1894,7 @@ function renderWater(){
   const C=339.3,offset=+(C*(1-pct)).toFixed(1);
   const reached=totalMl>=WATER_GOAL_ML;
   const ring=document.getElementById('water-ring');
-  if(ring){ring.setAttribute('stroke',reached?'var(--green)':'#7DD3FC');observeRing('water-ring',offset,339.3);}
+  if(ring){ring.setAttribute('stroke',reached?'var(--accent)':'#00b4ff');ring.style.filter=reached?'drop-shadow(0 0 6px var(--accent))':'drop-shadow(0 0 6px #00b4ff) drop-shadow(0 0 12px rgba(0,180,255,0.4))';observeRing('water-ring',offset,339.3);}
   const glasses=Math.floor(totalMl/200);
   const segBar=document.getElementById('water-seg-bar');
   if(segBar){segBar.querySelectorAll('.water-seg').forEach((s,i)=>{s.classList.remove('done','over');if(i<Math.min(glasses,8))s.classList.add(reached?'over':'done');});}
@@ -1922,7 +1922,7 @@ function renderWaterChart(){
   card.style.display='block';
   const labels=last7.map(date=>{const[y,m,d]=date.split('-');return new Date(y,m-1,d).toLocaleDateString('es-CL',{day:'numeric',month:'short'});});
   if(CHARTS.water)CHARTS.water.destroy();
-  CHARTS.water=new Chart(document.getElementById('water-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=8?'#00ff88':'#7DD3FC88'),borderRadius:3},{data:Array(7).fill(8),type:'line',borderColor:'#333333',borderWidth:1.5,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2(),callback:v=>v+'v'},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
+  CHARTS.water=new Chart(document.getElementById('water-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=8?'#00ff88':'#00b4ff'),borderRadius:6,borderSkipped:false},{data:Array(7).fill(8),type:'line',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2(),callback:v=>v+'v'},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
 }
 /* ── GOAL TICKER ── */
 let tickerIdx=0,tickerTimer=null;
@@ -1945,10 +1945,10 @@ function startTicker(){updateTicker();if(tickerTimer)clearInterval(tickerTimer);
 window.addEventListener('goals-changed',()=>{tickerIdx=0;updateTicker();renderDailyActionsWidget();});
 /* ── DAY RING ── */
 function getDayPhase(h){
-  if(h>=6&&h<12)return{name:'Mañana',color:'#F2C063'};
-  if(h>=12&&h<18)return{name:'Tarde',color:'#00ff88'};
-  if(h>=18)return{name:'Noche',color:'#7B9CDF'};
-  return{name:'Madrugada',color:'#76746E'};
+  if(h>=6&&h<12)return{name:'Mañana',color:'#ffcc00',glow:'drop-shadow(0 0 8px #ffcc00) drop-shadow(0 0 14px rgba(255,204,0,0.4))'};
+  if(h>=12&&h<18)return{name:'Tarde',color:'#00b4ff',glow:'drop-shadow(0 0 8px #00b4ff) drop-shadow(0 0 14px rgba(0,180,255,0.4))'};
+  if(h>=18)return{name:'Noche',color:'#a78bfa',glow:'drop-shadow(0 0 8px #a78bfa) drop-shadow(0 0 14px rgba(167,139,250,0.4))'};
+  return{name:'Madrugada',color:'#666666',glow:'none'};
 }
 function updateDayRing(){
   const now=new Date(),h=now.getHours(),m=now.getMinutes();
@@ -1962,6 +1962,7 @@ function updateDayRing(){
   document.getElementById('dayRingRemaining').textContent=remH+'h '+remM+'m';
   const prog=document.getElementById('dayRingProgress');
   prog.setAttribute('stroke',phase.color);
+  prog.style.filter=phase.glow;
   prog.setAttribute('stroke-dashoffset',offset);
 }
 updateDayRing();
