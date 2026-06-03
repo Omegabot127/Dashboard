@@ -723,12 +723,12 @@ function renderWeekStrip(){
     const done=total>0?S.habits.filter(h=>h.log.includes(dStr)).length:0;
     const allDone=total>0&&done===total,partial=done>0&&done<total;
     let bg,border,color;
-    if(isFuture){bg='transparent';border='1.5px solid rgba(255,255,255,0.08)';color='rgba(255,255,255,0.18)';}
+    if(isToday){bg='var(--accent)';border='1.5px solid var(--accent)';color='#000';}
+    else if(isFuture){bg='transparent';border='1.5px solid rgba(255,255,255,0.08)';color='rgba(255,255,255,0.18)';}
     else if(allDone){bg='var(--accent)';border='1.5px solid var(--accent)';color='#000';}
     else if(partial){bg=`rgba(0,255,136,${(0.12+done/total*0.3).toFixed(2)})`;border='1.5px solid rgba(0,255,136,0.45)';color='var(--accent)';}
-    else{bg='transparent';border='1.5px solid rgba(255,255,255,0.15)';color='var(--text2)';}
-    const todayShadow=isToday?';box-shadow:0 0 0 2.5px var(--accent)':'';
-    html+=`<div class="grit-week-day"><div class="grit-week-circle" style="background:${bg};border:${border};color:${color}${todayShadow};">${d.getDate()}</div><div class="grit-week-label">${DAY_L[i]}</div></div>`;
+    else{bg='transparent';border='1.5px solid rgba(255,255,255,0.15)';color='rgba(255,255,255,0.35)';}
+    html+=`<div class="grit-week-day"><div class="grit-week-circle" style="background:${bg};border:${border};color:${color};">${d.getDate()}</div><div class="grit-week-label" style="color:${isToday?'var(--accent)':''};">${DAY_L[i]}</div></div>`;
   }
   el.innerHTML=html;
 }
