@@ -176,21 +176,41 @@ canvas{width:100%!important;display:block;}
 .supp-dot{width:10px;height:10px;border-radius:50%;background:var(--bg4);}
 .supp-dot.done{background:var(--green);}
 .supp-adh{font-size:11px;color:var(--text2);min-width:34px;text-align:right;font-family:'Courier New',monospace;}
-/* HABIT CARDS */
-.habit-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;transition:background .2s;}
-.habit-card.done{background:rgba(0,255,136,0.04);}
-.habit-card-row{display:flex;align-items:center;gap:12px;}
-.hc-cb{width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin:-10px -4px -10px -10px;}
-.hc-cb-box{width:24px;height:24px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:13px;font-weight:700;color:#000;}
-.habit-card.done .hc-cb-box{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(0,255,136,.4);}
-.hc-name{flex:1;font-size:15px;color:var(--text);min-width:0;transition:opacity .2s;}
-.habit-card.done .hc-name{opacity:.6;}
-.hc-badge{font-size:12px;padding:3px 10px;border-radius:999px;background:var(--bg3);color:var(--text2);white-space:nowrap;flex-shrink:0;font-family:'Courier New',monospace;}
-.hc-dots{display:flex;gap:4px;margin-top:8px;padding-left:34px;}
-.hc-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.08);flex-shrink:0;}
-.hc-dot.done{background:var(--accent);}
-.habit-add-btn{width:100%;padding:14px;font-size:14px;background:var(--bg2);border:1px dashed var(--border2);border-radius:14px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:background .15s;letter-spacing:.02em;margin-top:4px;min-height:44px;}
-.habit-add-btn:hover{background:var(--bg3);color:var(--text);opacity:1;}
+/* GRIT HABITS */
+.grit-week-strip{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;padding:0 2px;}
+.grit-week-day{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
+.grit-week-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Courier New',monospace;transition:all .2s;flex-shrink:0;}
+.grit-week-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;}
+.grit-habit-card{border-radius:16px;padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:all .2s;overflow:hidden;}
+.grit-habit-icon{font-size:24px;cursor:pointer;flex-shrink:0;min-width:30px;text-align:center;user-select:none;}
+.grit-habit-center{flex:1;min-width:0;}
+.grit-habit-name{font-size:16px;font-weight:500;color:#fff;line-height:1.2;}
+.grit-habit-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-top:3px;}
+.grit-habit-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;}
+.grit-habit-streak{font-size:12px;color:rgba(255,255,255,0.7);white-space:nowrap;}
+.grit-habit-btn{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:20px;font-weight:700;min-height:unset;flex-shrink:0;}
+@keyframes grit-check{0%{transform:scale(1);}30%{transform:scale(0.85);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+.grit-habit-btn.checking{animation:grit-check 300ms ease-out forwards;}
+.grit-toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--bg3);border:0.5px solid var(--border2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:200;opacity:0;transition:all .2s;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,0.6);}
+.grit-toast.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:all;}
+.habit-add-panel{position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--bg2);border-top:0.5px solid var(--border2);border-radius:20px 20px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .3s ease;max-height:85vh;overflow-y:auto;}
+.habit-add-panel.open{transform:translateY(0);}
+.habit-add-overlay{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,0.55);opacity:0;transition:opacity .3s;pointer-events:none;}
+.habit-add-overlay.open{opacity:1;pointer-events:all;}
+.grit-emoji-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:10px 0 14px;}
+.grit-emoji-btn{background:var(--bg3);border:1.5px solid transparent;border-radius:10px;padding:10px;font-size:22px;cursor:pointer;text-align:center;transition:all .15s;min-height:unset;display:block;}
+.grit-emoji-btn.selected{border-color:var(--accent);background:var(--accent-bg);}
+.grit-color-grid{display:flex;gap:12px;margin:10px 0 14px;flex-wrap:wrap;}
+.grit-color-swatch{width:38px;height:38px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;flex-shrink:0;}
+.grit-color-swatch.selected{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,0.25);}
+.grit-add-btn{width:100%;padding:16px;font-size:15px;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:16px;color:var(--text2);cursor:pointer;font-family:var(--font);transition:all .15s;letter-spacing:.02em;margin-top:6px;min-height:52px;}
+.grit-add-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--accent);opacity:1;}
+.habit-stats-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+.habit-stats-hdr{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;}
+.habit-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 14px;}
+.habit-stat-box{background:var(--bg3);border-radius:10px;padding:10px 12px;}
+.habit-stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.habit-stat-val{font-size:22px;font-weight:400;color:var(--text);font-family:'Courier New',monospace;}
 /* BOTTOM TAB BAR */
 .btab-bar{position:fixed;bottom:0;left:0;right:0;z-index:50;display:flex;justify-content:center;background:linear-gradient(to bottom,rgba(0,0,0,0) 0%,rgba(0,0,0,0.96) 100%);padding:28px 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none;}
 .btab-pill{pointer-events:all;display:flex;gap:2px;background:rgba(10,10,10,0.88);border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:6px;box-shadow:0 12px 36px rgba(0,0,0,0.55);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);width:100%;max-width:520px;}
@@ -355,14 +375,24 @@ canvas{width:100%!important;display:block;}
 </div>
 <!-- HÁBITOS -->
 <div class="section" id="section-habitos">
+  <!-- Week strip -->
+  <div id="grit-week-strip" class="grit-week-strip"></div>
+  <!-- Habit list -->
   <div id="habits-list"></div>
-  <button class="habit-add-btn" id="habit-add-btn" onclick="showHabitForm()">+ Agregar hábito</button>
-  <div id="habit-form" style="display:none;margin-top:8px;">
-    <div class="card" style="margin-bottom:8px;">
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="habit-input" placeholder="Nombre del hábito..." style="flex:1;font-size:14px;" onkeydown="if(event.key==='Enter')addHabit();if(event.key==='Escape')hideHabitForm();"/>
-        <button onclick="addHabit()">+ Guardar</button>
-        <button class="btn-ghost" onclick="hideHabitForm()" style="min-height:44px;">×</button>
+  <!-- Add button -->
+  <button class="grit-add-btn" id="habit-add-btn" onclick="openHabitForm()">+ Nuevo hábito</button>
+  <!-- Stats -->
+  <div class="habit-stats-card" id="habit-stats-card" style="margin-top:6px;">
+    <div class="habit-stats-hdr" onclick="toggleHabitStats()">
+      <span style="font-size:12px;font-weight:500;color:var(--text);">Estadísticas</span>
+      <span id="habit-stats-chev" style="font-size:12px;color:var(--text3);">▾</span>
+    </div>
+    <div id="habit-stats-body" style="display:none;">
+      <div class="habit-stats-grid">
+        <div class="habit-stat-box"><div class="habit-stat-lbl">Racha actual</div><div class="habit-stat-val" id="hs-streak">—</div></div>
+        <div class="habit-stat-box"><div class="habit-stat-lbl">Mejor racha</div><div class="habit-stat-val" id="hs-best">—</div></div>
+        <div class="habit-stat-box"><div class="habit-stat-lbl">Días completos (mes)</div><div class="habit-stat-val" id="hs-month">—</div></div>
+        <div class="habit-stat-box"><div class="habit-stat-lbl">Tasa de éxito</div><div class="habit-stat-val" id="hs-rate">—</div></div>
       </div>
     </div>
   </div>
@@ -632,6 +662,8 @@ const CHARTS={};let chatLoading=false,summaryLoaded=false;
 let viewYear=new Date().getFullYear(),viewMonth=new Date().getMonth(),selectedDateKey=null;
 const MONTHS_ES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAYS_ES=['Dom','Lun','Mar','Mie','Jue','Vie','Sab'];
+const HABIT_COLORS=['#2D5A27','#1A3A5C','#4A1A4A','#5C3A1A','#3A1A1A','#1A4A3A'];
+const HABIT_ICONS_LIST=['💪','🏃','💧','😴','📚','🧘','🥗','🎯','🦷','☀️','💊','🏋️'];
 const ROUTINE={1:{label:'Lunes',type:'Upper Body',emoji:'upper',exercises:[{name:'Incline Barbell Press',muscle:'Pecho'},{name:'Pec Deck Fly',muscle:'Pecho'},{name:'Lat Pulldown',muscle:'Espalda'},{name:'Barbell Row',muscle:'Espalda'},{name:'Lateral Raises',muscle:'Hombros'},{name:'Preacher Curl',muscle:'Biceps'},{name:'Cable Pushdown',muscle:'Triceps'}]},2:{label:'Martes',type:'Lower Body',emoji:'lower',exercises:[{name:'Leg Extension',muscle:'Cuadriceps'},{name:'Leg Press',muscle:'Cuad/Glut'},{name:'Hip Adductor Machine',muscle:'Aductores'},{name:'Standing Calf Raises',muscle:'Gemelos'},{name:'Cable Crunch',muscle:'Core'},{name:'Plank',muscle:'Core'}]},3:{label:'Miercoles',type:'Descanso',emoji:'rest',exercises:[]},4:{label:'Jueves',type:'Upper Body',emoji:'upper',exercises:[{name:'Seated Chest Press',muscle:'Pecho'},{name:'Barbell Row',muscle:'Espalda'},{name:'Rear Delt Machine',muscle:'Post. Hombro'},{name:'Lat Pulldown Supine',muscle:'Espalda'},{name:'Lateral Raises',muscle:'Hombros'},{name:'Bayesian Curl',muscle:'Biceps'},{name:'Preacher Curl',muscle:'Biceps'},{name:'Overhead Cable Ext',muscle:'Triceps'},{name:'Cable Pushdown',muscle:'Triceps'}]},5:{label:'Viernes',type:'Lower Body',emoji:'lower',exercises:[{name:'Seated Leg Curl',muscle:'Isquios'},{name:'Romanian Deadlift',muscle:'Isquios'},{name:'Hip Thrust',muscle:'Gluteos'},{name:'Standing Calf Raises',muscle:'Gemelos'},{name:'Hanging Leg Raises',muscle:'Core'},{name:'Ab Wheel Rollout',muscle:'Core'}]},6:{label:'Sabado',type:'Descanso',emoji:'rest',exercises:[]},0:{label:'Domingo',type:'Descanso',emoji:'rest',exercises:[]}};
 function isTD(d){return ROUTINE[d]&&ROUTINE[d].exercises.length>0;}
 function today(){return new Date().toLocaleDateString('es-CL');}
@@ -725,39 +757,146 @@ async function sendChat(){
   chatLoading=false;document.getElementById('chat-messages').scrollTop=99999;
 }
 function clearChat(){document.getElementById('chat-messages').innerHTML='';summaryLoaded=false;loadSummary();}
-function showHabitForm(){document.getElementById('habit-form').style.display='block';document.getElementById('habit-add-btn').style.display='none';setTimeout(()=>document.getElementById('habit-input').focus(),10);}
-function hideHabitForm(){document.getElementById('habit-form').style.display='none';document.getElementById('habit-add-btn').style.display='block';document.getElementById('habit-input').value='';}
-function addHabit(){const t=document.getElementById('habit-input').value.trim();if(!t)return;S.habits.push({name:t,log:[]});hideHabitForm();saveState();renderHabits();renderStrip();}
-function toggleHabit(i){
-  const t=today();
-  const card=document.getElementById('hc-'+i);
-  const cb=card?.querySelector('.hc-cb-box');
-  bounceEl(card);bounceCb(cb);
-  const idx=S.habits[i].log.indexOf(t);
-  const adding=idx<0;
-  if(idx>=0)S.habits[i].log.splice(idx,1);else S.habits[i].log.push(t);
-  saveState();
-  setTimeout(()=>{
-    renderHabits();renderStrip();
-    if(adding&&S.habits.length>0&&S.habits.filter(h=>h.log.includes(t)).length===S.habits.length){
-      const first=document.querySelector('.habit-card');
-      setTimeout(()=>{if(first){bounceCard(first);triggerConfetti(first);}},60);
-    }
-  },110);
-}
+/* ── GRIT HABITS ── */
+function migrateHabits(){let ch=false;S.habits.forEach((h,i)=>{if(!h.id){h.id='h'+Date.now()+i;ch=true;}if(!h.icon){h.icon=HABIT_ICONS_LIST[i%HABIT_ICONS_LIST.length];ch=true;}if(!h.color){h.color=HABIT_COLORS[i%HABIT_COLORS.length];ch=true;}});if(ch)saveState();}
+function hexToRgb(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return r+','+g+','+b;}
 function getStreak(log){let s=0;const d=new Date();while(true){if(log.includes(d.toLocaleDateString('es-CL'))){s++;d.setDate(d.getDate()-1);}else break;}return s;}
+function renderWeekStrip(){
+  const el=document.getElementById('grit-week-strip');if(!el)return;
+  const now=new Date(),todayStr=today();
+  const dow=now.getDay(),mon=new Date(now);
+  mon.setDate(now.getDate()-(dow===0?6:dow-1));
+  const DAY_L=['L','M','X','J','V','S','D'];
+  const total=S.habits.length;
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(mon);d.setDate(mon.getDate()+i);
+    const dStr=d.toLocaleDateString('es-CL');
+    const isFuture=d>now&&dStr!==todayStr;
+    const isToday=dStr===todayStr;
+    const done=total>0?S.habits.filter(h=>h.log.includes(dStr)).length:0;
+    const allDone=total>0&&done===total,partial=done>0&&done<total;
+    let bg,border,color;
+    if(isFuture){bg='transparent';border='1.5px solid rgba(255,255,255,0.08)';color='rgba(255,255,255,0.18)';}
+    else if(allDone){bg='var(--accent)';border='1.5px solid var(--accent)';color='#000';}
+    else if(partial){bg=`rgba(0,255,136,${(0.12+done/total*0.3).toFixed(2)})`;border='1.5px solid rgba(0,255,136,0.45)';color='var(--accent)';}
+    else{bg='transparent';border='1.5px solid rgba(255,255,255,0.15)';color='var(--text2)';}
+    const todayShadow=isToday?';box-shadow:0 0 0 2.5px var(--accent)':'';
+    html+=`<div class="grit-week-day"><div class="grit-week-circle" style="background:${bg};border:${border};color:${color}${todayShadow};">${d.getDate()}</div><div class="grit-week-label">${DAY_L[i]}</div></div>`;
+  }
+  el.innerHTML=html;
+}
 function renderHabits(){
+  migrateHabits();
   const el=document.getElementById('habits-list'),t=today();
   if(!el)return;
-  if(!S.habits.length){el.innerHTML='<p style="font-size:14px;color:var(--text2);padding:12px 0 4px;">Sin hábitos aún. Agrega uno abajo.</p>';return;}
-  const last7=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);last7.push(d.toLocaleDateString('es-CL'));}
+  renderWeekStrip();
+  if(!S.habits.length){el.innerHTML='<p style="font-size:14px;color:var(--text2);padding:8px 0 4px;">Sin hábitos aún.</p>';return;}
   el.innerHTML=S.habits.map((h,i)=>{
     const done=h.log.includes(t),streak=getStreak(h.log);
-    const badge=streak>=1?'🔥 '+streak:'—';
-    const dots=last7.map(d=>`<div class="hc-dot${h.log.includes(d)?' done':''}"></div>`).join('');
-    return`<div class="habit-card${done?' done':''}" id="hc-${i}"><div class="habit-card-row"><div class="hc-cb" onclick="toggleHabit(${i})"><div class="hc-cb-box">${done?'✓':''}</div></div><span class="hc-name">${h.name}</span><span class="hc-badge">${badge}</span><button class="del-btn" onclick="event.stopPropagation();S.habits.splice(${i},1);saveState();renderHabits();renderStrip();" style="min-height:unset;opacity:.3;">×</button></div><div class="hc-dots">${dots}</div></div>`;
+    const color=h.color||HABIT_COLORS[i%HABIT_COLORS.length];
+    const icon=h.icon||'💪';
+    const rgb=hexToRgb(color);
+    const cardBg=done?color:`rgba(${rgb},0.38)`;
+    const cardBorder=done?`1px solid ${color}`:`1px solid rgba(${rgb},0.55)`;
+    const btnBg=done?'rgba(255,255,255,0.95)':'transparent';
+    const btnBorder=done?'none':`2px solid rgba(${rgb},0.9)`;
+    const btnColor=done?'#000':'rgba(255,255,255,0.75)';
+    const streak_html=streak>=1?`<div class="grit-habit-streak">🔥 ${streak}</div>`:'<div style="height:18px;"></div>';
+    return`<div class="grit-habit-card" id="hc-${i}" style="background:${cardBg};border:${cardBorder};">
+      <div class="grit-habit-icon" onclick="editHabitIcon(${i})">${icon}</div>
+      <div class="grit-habit-center">
+        <div class="grit-habit-name">${h.name}</div>
+        <div class="grit-habit-sub">Cada día</div>
+      </div>
+      <div class="grit-habit-right">
+        ${streak_html}
+        <button class="grit-habit-btn" id="hc-btn-${i}" onclick="toggleHabit(${i})" style="background:${btnBg};border:${btnBorder};color:${btnColor};">${done?'✓':'+'}</button>
+      </div>
+    </div>`;
   }).join('');
 }
+function toggleHabit(i){
+  const t=today();const h=S.habits[i];if(!h)return;
+  if(h.log.includes(t)){showUnmarkToast(i);return;}
+  h.log.push(t);saveState();
+  const btn=document.getElementById('hc-btn-'+i);
+  if(btn){btn.classList.add('checking');btn.addEventListener('animationend',()=>btn.classList.remove('checking'),{once:true});}
+  setTimeout(()=>{
+    renderHabits();renderStrip();
+    if(S.habits.length>0&&S.habits.filter(h=>h.log.includes(t)).length===S.habits.length){
+      const first=document.querySelector('.grit-habit-card');
+      setTimeout(()=>{if(first){bounceCard(first);triggerConfetti(first);}},60);
+    }
+  },150);
+}
+let _toastTimer=null;
+function showUnmarkToast(i){
+  const t=document.getElementById('grit-toast');if(!t)return;
+  t.innerHTML=`<span style="font-size:13px;color:var(--text2);">¿Desmarcar?</span><button onclick="confirmUnmark(${i})" style="padding:5px 12px;font-size:12px;min-height:unset;">Sí</button><button class="btn-ghost" onclick="hideUnmarkToast()" style="padding:5px 12px;font-size:12px;min-height:unset;">No</button>`;
+  requestAnimationFrame(()=>t.classList.add('show'));
+  if(_toastTimer)clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(hideUnmarkToast,3000);
+}
+function hideUnmarkToast(){const t=document.getElementById('grit-toast');if(t)t.classList.remove('show');if(_toastTimer){clearTimeout(_toastTimer);_toastTimer=null;}}
+function confirmUnmark(i){const t=today();const h=S.habits[i];if(!h)return;const idx=h.log.indexOf(t);if(idx>=0)h.log.splice(idx,1);saveState();hideUnmarkToast();renderHabits();renderStrip();}
+function editHabitIcon(i){const h=S.habits[i];if(!h)return;const idx=HABIT_ICONS_LIST.indexOf(h.icon||'💪');h.icon=HABIT_ICONS_LIST[(idx+1)%HABIT_ICONS_LIST.length];saveState();renderHabits();}
+/* HABIT FORM */
+let _newHabitIcon=HABIT_ICONS_LIST[0],_newHabitColor=HABIT_COLORS[0];
+function openHabitForm(){
+  _newHabitIcon=HABIT_ICONS_LIST[0];
+  _newHabitColor=HABIT_COLORS[S.habits.length%HABIT_COLORS.length];
+  document.getElementById('habit-add-overlay').classList.add('open');
+  document.getElementById('habit-add-panel').classList.add('open');
+  renderHabitFormSelectors();
+  setTimeout(()=>document.getElementById('habit-new-name')?.focus(),310);
+}
+function closeHabitForm(){
+  document.getElementById('habit-add-overlay').classList.remove('open');
+  document.getElementById('habit-add-panel').classList.remove('open');
+  const inp=document.getElementById('habit-new-name');if(inp)inp.value='';
+}
+function renderHabitFormSelectors(){
+  const eg=document.getElementById('habit-emoji-grid');
+  if(eg)eg.innerHTML=HABIT_ICONS_LIST.map(em=>`<button class="grit-emoji-btn${em===_newHabitIcon?' selected':''}" onclick="selectHabitIcon('${em}')">${em}</button>`).join('');
+  const cg=document.getElementById('habit-color-grid');
+  if(cg)cg.innerHTML=HABIT_COLORS.map(c=>`<div class="grit-color-swatch${c===_newHabitColor?' selected':''}" style="background:${c};" onclick="selectHabitColor('${c}')"></div>`).join('');
+}
+function selectHabitIcon(em){_newHabitIcon=em;renderHabitFormSelectors();}
+function selectHabitColor(c){_newHabitColor=c;renderHabitFormSelectors();}
+function createHabit(){
+  const name=document.getElementById('habit-new-name')?.value.trim();if(!name)return;
+  S.habits.push({id:'h'+Date.now(),name,icon:_newHabitIcon,color:_newHabitColor,log:[]});
+  saveState();closeHabitForm();renderHabits();renderStrip();
+}
+/* HABIT STATS */
+let habitStatsOpen=false;
+function toggleHabitStats(){
+  habitStatsOpen=!habitStatsOpen;
+  const body=document.getElementById('habit-stats-body'),chev=document.getElementById('habit-stats-chev');
+  if(body)body.style.display=habitStatsOpen?'block':'none';
+  if(chev)chev.textContent=habitStatsOpen?'▴':'▾';
+  if(habitStatsOpen)renderHabitStats();
+}
+function renderHabitStats(){
+  if(!S.habits.length)return;
+  const maxStreak=Math.max(0,...S.habits.map(h=>getStreak(h.log)));
+  let bestEver=0;
+  S.habits.forEach(h=>{let b=0,c=0;[...h.log].sort().forEach(()=>{c++;b=Math.max(b,c);});bestEver=Math.max(bestEver,b);});
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth(),total=S.habits.length;
+  let completed=0;
+  for(let d=1;d<=now.getDate();d++){const dStr=new Date(y,m,d).toLocaleDateString('es-CL');if(S.habits.filter(h=>h.log.includes(dStr)).length===total)completed++;}
+  const rate=now.getDate()>0?Math.round(completed/now.getDate()*100):0;
+  const el=id=>document.getElementById(id);
+  if(el('hs-streak'))el('hs-streak').textContent=maxStreak;
+  if(el('hs-best'))el('hs-best').textContent=bestEver;
+  if(el('hs-month'))el('hs-month').textContent=completed+' días';
+  if(el('hs-rate'))el('hs-rate').textContent=rate+'%';
+}
+/* legacy stubs for backwards compat */
+function showHabitForm(){openHabitForm();}
+function hideHabitForm(){closeHabitForm();}
+function addHabit(){createHabit();}
 function renderHabitsChart(){
   const card=document.getElementById('habits-chart-card');
   if(!card)return;
@@ -1718,5 +1857,31 @@ loadState();
     </button>
   </div>
 </nav>
+<!-- HABIT ADD OVERLAY + PANEL -->
+<div class="habit-add-overlay" id="habit-add-overlay" onclick="closeHabitForm()"></div>
+<div class="habit-add-panel" id="habit-add-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+    <span style="font-size:16px;font-weight:500;color:var(--text);">Nuevo hábito</span>
+    <button class="btn-ghost" onclick="closeHabitForm()" style="min-height:unset;padding:4px 10px;font-size:16px;">×</button>
+  </div>
+  <div style="margin-bottom:12px;">
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Nombre</div>
+    <input type="text" id="habit-new-name" placeholder="Ej: Entrenar, Meditar..." style="width:100%;font-size:15px;padding:12px;" onkeydown="if(event.key==='Enter')createHabit()"/>
+  </div>
+  <div>
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Icono</div>
+    <div class="grit-emoji-grid" id="habit-emoji-grid"></div>
+  </div>
+  <div>
+    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">Color</div>
+    <div class="grit-color-grid" id="habit-color-grid"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:6px;">
+    <button onclick="createHabit()" style="flex:1;padding:14px;font-size:14px;font-weight:600;">Crear hábito</button>
+    <button class="btn-ghost" onclick="closeHabitForm()" style="padding:14px 20px;font-size:14px;">Cancelar</button>
+  </div>
+</div>
+<!-- GRIT TOAST -->
+<div class="grit-toast" id="grit-toast"></div>
 </body>
 </html>
