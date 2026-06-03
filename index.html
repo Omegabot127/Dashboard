@@ -138,6 +138,21 @@ input[type=range]{flex:1;accent-color:var(--accent);}
 .goal-item{margin-bottom:12px;}
 canvas{width:100%!important;display:block;}
 @media(max-width:480px){.stats-strip{grid-template-columns:repeat(2,1fr);}.metrics-grid{grid-template-columns:repeat(2,1fr);}.wk-ring-card{gap:16px;padding:16px;}.wk-ring-stat-num{font-size:22px;}.wk-ring-pct{font-size:26px;}}
+/* DAY STATUS CARD */
+.day-status-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;}
+.day-status-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.ds-metric-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'Courier New',monospace;margin-bottom:5px;}
+.ds-metric-val{font-size:26px;font-weight:400;font-family:'Courier New',monospace;line-height:1;margin-bottom:3px;}
+.ds-metric-val.good{color:var(--accent);text-shadow:0 0 10px rgba(0,255,136,0.3);}
+.ds-metric-val.ok{color:#F2C063;}
+.ds-metric-val.low{color:#ff6b6b;}
+.ds-metric-val.neutral{color:var(--text3);}
+.ds-metric-desc{font-size:11px;color:var(--text2);}
+.ds-separator{height:0.5px;background:var(--border);margin-bottom:12px;}
+.ds-hint-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:'Courier New',monospace;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.ds-hint-refresh{background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:0;min-height:unset;transition:color .15s;line-height:1;}
+.ds-hint-refresh:hover{color:var(--accent);opacity:1;}
+.ds-hint-text{background:rgba(255,255,255,0.02);border-left:2px solid var(--accent);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13px;color:var(--text2);line-height:1.6;}
 /* DAY RING */
 .day-ring-card{background:var(--bg2);border:0.5px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:20px;overflow:hidden;}
 .day-ring-svg-wrap{flex-shrink:0;position:relative;width:140px;height:140px;}
@@ -310,6 +325,32 @@ canvas{width:100%!important;display:block;}
         <button class="btn-ghost" onclick="togglePesoWidget()">Cerrar</button>
       </div>
     </div>
+  </div>
+  <!-- DAY STATUS CARD -->
+  <div class="day-status-card" id="day-status-card">
+    <div class="day-status-metrics">
+      <div>
+        <div class="ds-metric-label">Energía</div>
+        <div class="ds-metric-val neutral" id="ds-energy-val">—</div>
+        <div class="ds-metric-desc" id="ds-energy-desc">Sin datos</div>
+      </div>
+      <div>
+        <div class="ds-metric-label">Recuperación</div>
+        <div class="ds-metric-val neutral" id="ds-rec-val">—</div>
+        <div class="ds-metric-desc" id="ds-rec-desc">Sin datos</div>
+      </div>
+      <div>
+        <div class="ds-metric-label">Fatiga Gym</div>
+        <div class="ds-metric-val neutral" id="ds-fatigue-val">—</div>
+        <div class="ds-metric-desc" id="ds-fatigue-desc"></div>
+      </div>
+    </div>
+    <div class="ds-separator"></div>
+    <div class="ds-hint-label">
+      <span>Sugerencia</span>
+      <button class="ds-hint-refresh" onclick="loadDayStatusHint(true)" title="Regenerar">↻</button>
+    </div>
+    <div class="ds-hint-text" id="ds-hint-text">Registra tu sueño y hábitos para obtener tu estado del día</div>
   </div>
   <!-- DAY RING -->
   <div class="day-ring-card">
@@ -620,12 +661,12 @@ function dateISO(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).p
 function dowISO(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();}
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
-function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};const _pf=getProfile();const _ne=document.querySelector('.app-header-name');if(_ne&&_pf.nombre)_ne.textContent=_pf.nombre;render();setTimeout(loadSummary,300);}
+function loadState(){const s=lsGet(SKEY);if(s)S={...S,...s};const _pf=getProfile();const _ne=document.querySelector('.app-header-name');if(_ne&&_pf.nombre)_ne.textContent=_pf.nombre;render();setTimeout(loadSummary,300);setTimeout(()=>loadDayStatusHint(false),500);}
 function saveState(){lsSet(SKEY,S);}
 function AC(){return'#00ff88';} function T2(){return'rgba(255,255,255,0.4)';} function BD(){return'rgba(255,255,255,0.04)';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderWkStats();renderCalendar();renderWater();renderPO();renderPesoMini();
+  renderStrip();renderHabits();renderMeals();renderWkStats();renderCalendar();renderWater();renderPO();renderPesoMini();renderDayStatus();
 }
 function switchTab(name){
   const prev=document.querySelector('.section.active');
@@ -633,7 +674,7 @@ function switchTab(name){
   const bt=document.getElementById('btab-'+name);if(bt)bt.classList.add('active');
   const sec=document.getElementById('section-'+name);if(!sec)return;
   const doContent=()=>{
-    if(name==='inicio'){renderStrip();}
+    if(name==='inicio'){renderStrip();renderDayStatus();}
     if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
     if(name==='sleep')setTimeout(renderSleepScreen,50);
     if(name==='nutricion'){renderMeals();renderWater();}
@@ -1606,6 +1647,59 @@ function triggerConfetti(originEl){
     const anim=p.animate([{transform:`translate(0,0) rotate(${rot}deg)`,opacity:1},{transform:`translate(${xd}px,${yd}px) rotate(${rot+360+Math.random()*360}deg)`,opacity:0}],{duration:900+Math.random()*500,easing:'cubic-bezier(.25,.46,.45,.94)',fill:'forwards'});
     anim.onfinish=()=>p.remove();
   }
+}
+/* ── DAY STATUS CARD ── */
+const DS_HINT_KEY='day_status_hint_v1';
+function calcDayScores(){
+  const t=today(),goal=getCalGoal();
+  const kcal=S.meals.filter(m=>m.date===t).reduce((a,m)=>a+m.kcal,0);
+  const habitsDone=S.habits.filter(h=>h.log.includes(t)).length;
+  const habitsTotal=S.habits.length;
+  const sessions=getSleepSessions();
+  const lastSleep=sessions[0];
+  let energy=0,hasData=false;
+  if(lastSleep){hasData=true;energy+=Math.min(20,(lastSleep.hours/8)*20)+((lastSleep.quality/5)*20);}
+  energy+=habitsTotal>0?(habitsDone/habitsTotal)*30:15;
+  if(kcal>=goal)energy+=30;else if(kcal>=goal*0.7)energy+=20;else if(kcal>=goal*0.4)energy+=10;else energy+=5;
+  let recovery=50;
+  if(lastSleep){hasData=true;recovery=Math.min(50,(lastSleep.hours/8)*50)+((lastSleep.quality/5)*50);}
+  // consecutive training days
+  let consec=0;const cd=new Date();
+  for(let i=0;i<14;i++){const key=cd.toISOString().split('T')[0],dow=cd.getDay();if(isTD(dow)&&S.wAttended[key])consec++;else if(isTD(dow))break;cd.setDate(cd.getDate()-1);}
+  const isRestDay=!isTD(new Date().getDay());
+  return{energy:Math.round(energy),recovery:Math.round(recovery),consec,isRestDay,hasData,habitsDone,habitsTotal,kcal,goal};
+}
+function _dsCls(v){return v>=80?'good':v>=60?'ok':'low';}
+function _dsEnergyDesc(v){return v>=80?'Alta':v>=60?'Moderada':v>=40?'Normal':'Baja';}
+function _dsRecDesc(v){return v>=80?'Óptima':v>=60?'Normal':v>=40?'Moderada':'Pobre';}
+function renderDayStatus(){
+  const sc=calcDayScores();
+  const set=(vid,did,val,desc,cls)=>{const ve=document.getElementById(vid),de=document.getElementById(did);if(ve){ve.textContent=val;ve.className='ds-metric-val '+cls;}if(de)de.textContent=desc;};
+  if(!sc.hasData){
+    set('ds-energy-val','ds-energy-desc','—','Sin datos','neutral');
+    set('ds-rec-val','ds-rec-desc','—','Sin datos','neutral');
+  } else {
+    set('ds-energy-val','ds-energy-desc',sc.energy,_dsEnergyDesc(sc.energy),_dsCls(sc.energy));
+    set('ds-rec-val','ds-rec-desc',sc.recovery,_dsRecDesc(sc.recovery),_dsCls(sc.recovery));
+  }
+  let fv,fd,fc;
+  if(sc.isRestDay){fv='—';fd='Día de recuperación';fc='good';}
+  else if(sc.consec>=5){fv=sc.consec;fd='Necesitas descanso';fc='low';}
+  else if(sc.consec>=3){fv=sc.consec;fd='Cargado';fc='ok';}
+  else{fv=sc.consec;fd='Fresco';fc='good';}
+  set('ds-fatigue-val','ds-fatigue-desc',fv,fd,fc);
+}
+async function loadDayStatusHint(force){
+  const el=document.getElementById('ds-hint-text');if(!el)return;
+  const todayK=todayISO();
+  const cached=lsGet(DS_HINT_KEY);
+  if(!force&&cached&&cached.date===todayK){el.textContent=cached.text;return;}
+  const sc=calcDayScores();
+  if(!sc.hasData){el.textContent='Registra tu sueño y hábitos para obtener tu estado del día';return;}
+  el.textContent='...';
+  const prompt=`Eres el coach de Nico. Sus datos de hoy: energía ${sc.energy}%, recuperación ${sc.recovery}%, días consecutivos de gym: ${sc.consec}, hábitos ${sc.habitsDone}/${sc.habitsTotal} completados, calorías ${sc.kcal}/${sc.goal}. Da una sugerencia concreta de máximo 2 oraciones para optimizar su día. Sin saludar, directo al grano.`;
+  try{const r=await callAI([{role:'user',content:prompt}],150);el.textContent=r;lsSet(DS_HINT_KEY,{date:todayK,text:r});}
+  catch(e){el.textContent='No se pudo cargar la sugerencia.';}
 }
 /* ── PERFIL / CONFIGURACIÓN ── */
 const PROFILE_KEY='user_profile_v1';
