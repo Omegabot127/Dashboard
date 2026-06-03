@@ -584,20 +584,24 @@ canvas{width:100%!important;display:block;}
       <div style="flex:1;min-width:0;">
         <div style="font-size:15px;color:var(--text);margin-bottom:6px;"><span id="kcal-consumed-side">0</span> kcal · de <span id="kcal-goal-display">3,000</span></div>
         <div style="font-size:13px;" id="kcal-remaining"></div>
+        <div style="font-size:11px;margin-top:5px;font-family:'Courier New',monospace;display:none;" id="kcal-tdee-line"></div>
       </div>
     </div>
     <div style="display:flex;gap:6px;">
       <div style="flex:1;background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Prot</div>
         <div style="font-size:14px;color:var(--text);font-family:'Courier New',monospace;"><span id="m-prot">0</span>g</div>
+        <div style="font-size:10px;font-family:'Courier New',monospace;margin-top:3px;" id="mg-prot"></div>
       </div>
       <div style="flex:1;background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Carbs</div>
         <div style="font-size:14px;color:var(--text);font-family:'Courier New',monospace;"><span id="m-carb">0</span>g</div>
+        <div style="font-size:10px;font-family:'Courier New',monospace;margin-top:3px;" id="mg-carb"></div>
       </div>
       <div style="flex:1;background:var(--bg3);border-radius:10px;padding:10px;text-align:center;">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Grasa</div>
         <div style="font-size:14px;color:var(--text);font-family:'Courier New',monospace;"><span id="m-fat">0</span>g</div>
+        <div style="font-size:10px;font-family:'Courier New',monospace;margin-top:3px;" id="mg-fat"></div>
       </div>
     </div>
   </div>
@@ -968,6 +972,7 @@ function savePesoInline(){
   const kg=parseFloat(inp.value);if(!kg||kg<30||kg>200)return;
   S.peso.push({date:today(),kg});inp.value='';saveState();renderStrip();renderPesoMini();
   togglePesoWidget();
+  const _pf=getProfile();_pf.peso=kg;lsSet(PROFILE_KEY,_pf);
 }
 function renderPesoMini(){
   const el=document.getElementById('st-peso');
@@ -1265,6 +1270,24 @@ function renderMeals(){
   observeRing('kcal-ring',+(326.7*(1-Math.min(1,tk/goal))).toFixed(1),326.7);
   const _gd=document.getElementById('kcal-goal-display');if(_gd)_gd.textContent=goal.toLocaleString();
   document.getElementById('m-prot').textContent=tp;document.getElementById('m-carb').textContent=tc;document.getElementById('m-fat').textContent=tf;
+  // TDEE line + macro goals from profile
+  const pf=getProfile();
+  const tdeeEl=document.getElementById('kcal-tdee-line');
+  if(tdeeEl){
+    if(pf.peso&&pf.altura&&pf.edad){
+      const tmb=calcTMB(pf),tdee=calcTDEE(tmb,pf.actividad),surplus=goal-tdee;
+      const sc=surplus>=200&&surplus<=500?'var(--accent)':surplus>500?'#F2C063':'#ff6b6b';
+      const surplusStr=(surplus>=0?'+':'')+surplus;
+      tdeeEl.style.display='block';
+      tdeeEl.innerHTML='TDEE: '+tdee.toLocaleString()+' kcal · Superávit: <span style="color:'+sc+';">'+surplusStr+' kcal</span>';
+    } else {tdeeEl.style.display='none';}
+  }
+  if(pf.peso&&pf.altura&&pf.edad){
+    const protG=Math.round(pf.peso*2),fatG=Math.round(goal*0.25/9);
+    const carbG=Math.max(0,Math.round((goal-protG*4-fatG*9)/4));
+    const setMG=(id,cons,tgt)=>{const e=document.getElementById(id);if(!e)return;const pct=tgt>0?cons/tgt:1;const c=pct>=0.8?'var(--accent)':pct>=0.5?'#F2C063':'#ff6b6b';e.innerHTML='<span style="color:'+c+';">/ '+tgt+'g</span>';};
+    setMG('mg-prot',tp,protG);setMG('mg-carb',tc,carbG);setMG('mg-fat',tf,fatG);
+  } else {['mg-prot','mg-carb','mg-fat'].forEach(id=>{const e=document.getElementById(id);if(e)e.innerHTML='';});}
   const lc=document.getElementById('meals-list-card'),ml=document.getElementById('meals-list');
   if(!tm.length){lc.style.display='none';return;}lc.style.display='block';
   ml.innerHTML=tm.map(m=>{const ri=S.meals.lastIndexOf(m);return'<div class="meal-item"><span style="flex:1;font-size:13px;color:var(--text);">'+m.name+'</span><span style="font-size:12px;color:var(--text2);min-width:55px;text-align:right;">'+m.kcal+' kcal</span><button class="del-btn" onclick="S.meals.splice('+ri+',1);saveState();renderMeals();" style="min-height:unset;">×</button></div>';}).join('');
@@ -1277,13 +1300,14 @@ function renderKcalChart(){
   if(vals.every(v=>v===0)){card.style.display='none';return;}card.style.display='block';
   if(CHARTS.kcal)CHARTS.kcal.destroy();
   const labels=last7.map(d=>{const pts=d.split('/');return new Date(pts[2],pts[1]-1,pts[0]).toLocaleDateString('es-CL',{day:'numeric',month:'short'});});
-  CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=3000?'#00ff88':AC()),borderRadius:4,borderSkipped:false},{data:Array(7).fill(3000),type:'line',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
+  const _kcg=getCalGoal();
+  CHARTS.kcal=new Chart(document.getElementById('kcal-chart').getContext('2d'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:vals.map(v=>v>=_kcg?'#00ff88':AC()),borderRadius:4,borderSkipped:false},{data:Array(7).fill(_kcg),type:'line',borderColor:'rgba(255,255,255,0.15)',borderWidth:1,borderDash:[4,4],pointRadius:0}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{color:T2()},grid:{color:BD()}},x:{ticks:{color:T2()},grid:{display:false}}}}});
 }
 const ANTHROPIC_API_KEY='';
 async function getAI(section){
   const box=document.getElementById('ai-'+section),txt=document.getElementById('ai-'+section+'-text');box.style.display='block';txt.textContent='Analizando...';
   const tm=S.meals.filter(m=>m.date===today()),kcal=tm.reduce((a,m)=>a+m.kcal,0);
-  const prompts={sleep:'Experto en rendimiento. Sueno reciente: '+JSON.stringify(S.sleep.slice(0,7))+'. 1-2 recomendaciones en espanol.',comidas:'Nutricionista. Meta 3000 kcal/dia para subir musculo. Hoy lleva '+kcal+' kcal. Comidas: '+JSON.stringify(tm)+'. Sugiere que comer para completar. Max 4 oraciones en espanol.'};
+  const prompts={sleep:'Experto en rendimiento. Sueno reciente: '+JSON.stringify(S.sleep.slice(0,7))+'. 1-2 recomendaciones en espanol.',comidas:'Nutricionista. Meta '+getCalGoal()+' kcal/dia para subir musculo. Hoy lleva '+kcal+' kcal. Comidas: '+JSON.stringify(tm)+'. Sugiere que comer para completar. Max 4 oraciones en espanol.'};
   try{const r=await callAI([{role:'user',content:prompts[section]}],500);txt.textContent=r;}catch(e){txt.textContent='Error al conectar.';}
 }
 function emojiIcon(e){return "";}
