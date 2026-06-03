@@ -148,34 +148,12 @@ canvas{width:100%!important;display:block;}
 .day-ring-stat{text-align:center;flex:1;min-width:0;}
 .day-ring-stat-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;}
 .day-ring-stat-val{font-size:14px;font-weight:500;color:var(--text);font-family:'Courier New',monospace;}
-/* SEGMENT BAR (habits, supp) */
-.g-seg-row{display:flex;gap:3px;margin-top:8px;margin-bottom:4px;}
-.g-seg{height:3px;flex:1;border-radius:2px;background:var(--bg4);transition:background .3s;}
-.g-seg.filled{background:var(--green);}
 /* WATER SEG BAR */
 .water-seg-bar{display:flex;gap:3px;height:6px;margin:8px 0;}
 .water-seg{flex:1;height:100%;border-radius:2px;background:rgba(0,180,255,0.08);}
 .water-seg.done{background:linear-gradient(90deg,#0066ff,#00b4ff);box-shadow:0 0 6px rgba(0,180,255,0.5);}
 .water-seg.over{background:var(--accent);box-shadow:0 0 6px var(--accent-glow);}
 /* SUPPLEMENTS */
-.supp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.06);margin-bottom:6px;transition:background .15s;}
-.supp-row:hover{background:rgba(255,255,255,0.055);}
-.supp-row.is-done{opacity:.52;background:rgba(0,255,136,0.06)!important;}
-.supp-cb{width:20px;height:20px;border-radius:6px;border:1.5px solid rgba(255,255,255,0.18);background:none;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;font-size:0;user-select:none;}
-.supp-cb.checked{background:var(--green);border-color:var(--green);box-shadow:0 0 8px rgba(0,255,136,.4);font-size:11px;color:#000000;font-weight:700;}
-.supp-name{flex:1;font-size:13px;color:var(--text);outline:none;cursor:text;min-width:0;}
-.supp-dose{font-size:11px;color:var(--text2);margin-right:4px;outline:none;cursor:text;white-space:nowrap;}
-.supp-timing{font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,0.06);color:var(--text2);white-space:nowrap;flex-shrink:0;}
-.supp-del{background:none;border:none;cursor:pointer;font-size:15px;color:var(--text3);opacity:0;padding:2px 4px;transition:opacity .15s;flex-shrink:0;}
-.supp-row:hover .supp-del{opacity:.5;}
-.supp-del:hover{opacity:1!important;color:var(--red);}
-.supp-grid-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);}
-.supp-grid-row:last-child{border-bottom:none;}
-.supp-grid-name{font-size:11px;color:var(--text2);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.supp-grid-dots{display:flex;gap:4px;flex:1;}
-.supp-dot{width:10px;height:10px;border-radius:50%;background:var(--bg4);}
-.supp-dot.done{background:var(--green);}
-.supp-adh{font-size:11px;color:var(--text2);min-width:34px;text-align:right;font-family:'Courier New',monospace;}
 /* GRIT HABITS */
 .grit-week-strip{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;padding:0 2px;}
 .grit-week-day{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;}
@@ -395,38 +373,6 @@ canvas{width:100%!important;display:block;}
         <div class="habit-stat-box"><div class="habit-stat-lbl">Tasa de éxito</div><div class="habit-stat-val" id="hs-rate">—</div></div>
       </div>
     </div>
-  </div>
-  <!-- SUPLEMENTOS (fusionado) -->
-  <div class="card" id="supp-today-card">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
-      <div>
-        <div style="display:flex;align-items:baseline;gap:6px;">
-          <span style="font-size:28px;font-weight:700;font-family:'Courier New',monospace;color:var(--text);line-height:1;" id="supp-done-count">0</span>
-          <span style="font-size:13px;color:var(--text2);">/ <span id="supp-total-count">0</span> tomados hoy</span>
-        </div>
-        <div class="g-seg-row" id="supp-seg-row"></div>
-        <div style="font-size:11px;color:var(--text3);letter-spacing:.04em;" id="supp-status-label">tomados hoy</div>
-      </div>
-    </div>
-    <div id="supp-list"></div>
-    <div style="border-top:0.5px solid var(--border);padding-top:10px;margin-top:8px;">
-      <button class="btn-ghost" onclick="showSuppForm()" id="supp-add-btn" style="font-size:12px;width:100%;">+ Agregar suplemento</button>
-      <div id="supp-form" style="display:none;margin-top:8px;">
-        <div style="display:grid;grid-template-columns:1fr 80px 130px;gap:6px;margin-bottom:8px;">
-          <input type="text" id="supp-form-name" placeholder="Nombre" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-          <input type="text" id="supp-form-dose" placeholder="Dosis" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-          <input type="text" id="supp-form-timing" placeholder="Hora (ej: Noche)" style="font-size:13px;" onkeydown="if(event.key==='Enter')saveNewSupp()"/>
-        </div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="saveNewSupp()">+ Guardar</button>
-          <button class="btn-ghost" onclick="hideSuppForm()">Cancelar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Adherencia — últimos 7 días</div>
-    <div id="supp-grid"></div>
   </div>
 </div>
 <!-- WORKOUT -->
@@ -679,7 +625,7 @@ function saveState(){lsSet(SKEY,S);}
 function AC(){return'#00ff88';} function T2(){return'rgba(255,255,255,0.4)';} function BD(){return'rgba(255,255,255,0.04)';}
 function render(){
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('es-CL',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  renderStrip();renderHabits();renderMeals();renderWkStats();renderCalendar();renderWater();renderSupplements();renderPO();renderPesoMini();
+  renderStrip();renderHabits();renderMeals();renderWkStats();renderCalendar();renderWater();renderPO();renderPesoMini();
 }
 function switchTab(name){
   const prev=document.querySelector('.section.active');
@@ -691,7 +637,7 @@ function switchTab(name){
     if(name==='workout'){renderWkStats();renderCalendar();renderPO();}
     if(name==='sleep')setTimeout(renderSleepScreen,50);
     if(name==='nutricion'){renderMeals();renderWater();}
-    if(name==='habitos'){renderHabits();renderSupplements();}
+    if(name==='habitos'){renderHabits();}
   };
   if(prev&&prev!==sec){
     prev.style.transition='opacity 150ms ease,transform 150ms ease';
@@ -1300,95 +1246,6 @@ async function getAI(section){
   try{const r=await callAI([{role:'user',content:prompts[section]}],500);txt.textContent=r;}catch(e){txt.textContent='Error al conectar.';}
 }
 function emojiIcon(e){return "";}
-/* ── SUPLEMENTOS ── */
-const DEFAULT_SUPPS=[
-  {id:'s1',name:'Creatina',dose:'5g',timing:'Mañana'},
-  {id:'s2',name:'Proteína Whey',dose:'30g',timing:'Post-ent.'},
-  {id:'s3',name:'Omega 3',dose:'2 cápsulas',timing:'Noche'},
-  {id:'s4',name:'Vitamina D',dose:'1 cápsula',timing:'Mañana'},
-  {id:'s5',name:'Magnesio',dose:'400mg',timing:'Noche'},
-  {id:'s6',name:'Zinc',dose:'25mg',timing:'Noche'},
-  {id:'s7',name:'MK-677',dose:'1 cápsula',timing:'Noche'},
-];
-function getSuppData(){const d=lsGet('supplements_v1');return d||{supplements:JSON.parse(JSON.stringify(DEFAULT_SUPPS)),logs:{}};}
-function saveSuppData(d){lsSet('supplements_v1',d);}
-function getTodaySuppLog(d){return(d||getSuppData()).logs[getActiveDateString()]||[];}
-function toggleSupp(id){
-  const d=getSuppData(),date=getActiveDateString();
-  const suppIdx=(d.supplements||[]).findIndex(s=>s.id===id);
-  const rows=document.querySelectorAll('.supp-row');
-  const row=rows[suppIdx],cb=row?.querySelector('.supp-cb');
-  bounceEl(row);bounceCb(cb);
-  if(!d.logs[date])d.logs[date]=[];
-  const idx=d.logs[date].indexOf(id);
-  const adding=idx<0;
-  if(idx>=0)d.logs[date].splice(idx,1);else d.logs[date].push(id);
-  saveSuppData(d);
-  setTimeout(()=>{
-    renderSupplements();
-    if(adding){
-      const nd=getSuppData();
-      if(getTodaySuppLog(nd).length===nd.supplements.length){
-        const card=document.getElementById('supp-today-card');
-        setTimeout(()=>bounceCard(card),60);
-      }
-    }
-  },110);
-}
-function deleteSupp(id){const d=getSuppData();d.supplements=d.supplements.filter(s=>s.id!==id);saveSuppData(d);renderSupplements();}
-function showSuppForm(){
-  document.getElementById('supp-form').style.display='block';
-  document.getElementById('supp-add-btn').style.display='none';
-  setTimeout(()=>document.getElementById('supp-form-name').focus(),10);
-}
-function hideSuppForm(){
-  document.getElementById('supp-form').style.display='none';
-  document.getElementById('supp-add-btn').style.display='block';
-  ['supp-form-name','supp-form-dose','supp-form-timing'].forEach(id=>document.getElementById(id).value='');
-}
-function saveNewSupp(){
-  const name=document.getElementById('supp-form-name').value.trim();
-  const dose=document.getElementById('supp-form-dose').value.trim();
-  const timing=document.getElementById('supp-form-timing').value.trim();
-  if(!name)return;
-  const d=getSuppData();
-  d.supplements.push({id:'s'+Date.now(),name,dose:dose||'—',timing:timing||'—'});
-  saveSuppData(d);hideSuppForm();renderSupplements();
-}
-function startEditSuppField(el,id,field){
-  el.contentEditable='true';el.focus();
-  const sel=window.getSelection(),r=document.createRange();r.selectNodeContents(el);sel.removeAllRanges();sel.addRange(r);
-  const confirm=()=>{el.contentEditable='false';const val=el.textContent.trim();if(val){const d=getSuppData();const s=d.supplements.find(x=>x.id===id);if(s){s[field]=val;saveSuppData(d);}}else renderSupplements();};
-  el.onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();confirm();el.onblur=null;}if(ev.key==='Escape'){el.contentEditable='false';el.onblur=null;renderSupplements();}};
-  el.onblur=confirm;
-}
-function renderSupplements(){
-  const d=getSuppData(),supps=d.supplements,todayLog=getTodaySuppLog(d);
-  const doneCount=todayLog.length,total=supps.length,allDone=total>0&&doneCount===total;
-  const dc=document.getElementById('supp-done-count');if(dc)dc.textContent=doneCount;
-  const tc=document.getElementById('supp-total-count');if(tc)tc.textContent=total;
-  const sl=document.getElementById('supp-status-label');if(sl)sl.textContent=allDone?'Todo tomado — buen día 💊':'tomados hoy';
-  const card=document.getElementById('supp-today-card');if(card)card.style.background=allDone?'rgba(0,255,136,0.04)':'';
-  const seg=document.getElementById('supp-seg-row');
-  if(seg)seg.innerHTML=supps.map(s=>'<div class="g-seg'+(todayLog.includes(s.id)?' filled':'')+'"></div>').join('');
-  const list=document.getElementById('supp-list');
-  if(list)list.innerHTML=supps.map(s=>{
-    const done=todayLog.includes(s.id);
-    return'<div class="supp-row'+(done?' is-done':'')+'"><div class="supp-cb'+(done?' checked':'')+'" onclick="toggleSupp(\''+s.id+'\')">'+(done?'✓':'')+'</div><span class="supp-name" onclick="startEditSuppField(this,\''+s.id+'\',\'name\')">'+s.name+'</span><span class="supp-dose" onclick="startEditSuppField(this,\''+s.id+'\',\'dose\')">'+s.dose+'</span><span class="supp-timing">'+s.timing+'</span><button class="supp-del" onclick="deleteSupp(\''+s.id+'\')">×</button></div>';
-  }).join('');
-  // weekly adherence grid
-  const last7=[];for(let i=6;i>=0;i--){const dt=new Date();dt.setDate(dt.getDate()-i);last7.push(dt.toISOString().split('T')[0]);}
-  const DAY_L=['D','L','M','X','J','V','S'];
-  const gridEl=document.getElementById('supp-grid');
-  if(!gridEl)return;
-  let html='<div style="display:flex;align-items:center;gap:8px;padding:0 0 6px;margin-bottom:2px;"><div style="width:110px;"></div><div class="supp-grid-dots">'+last7.map(date=>{const p=date.split('-');return'<div style="width:10px;font-size:9px;color:var(--text3);text-align:center;">'+DAY_L[new Date(+p[0],+p[1]-1,+p[2]).getDay()]+'</div>';}).join('')+'</div><div style="min-width:34px;font-size:9px;color:var(--text3);text-align:right;">7d</div></div>';
-  html+=supps.map(s=>{
-    const dots=last7.map(date=>'<div class="supp-dot'+((d.logs[date]||[]).includes(s.id)?' done':'')+'"></div>').join('');
-    const wk=last7.filter(date=>(d.logs[date]||[]).includes(s.id)).length;
-    return'<div class="supp-grid-row"><div class="supp-grid-name">'+s.name+'</div><div class="supp-grid-dots">'+dots+'</div><div class="supp-adh">'+Math.round(wk/7*100)+'%</div></div>';
-  }).join('');
-  gridEl.innerHTML=html;
-}
 /* ── PROGRESSIVE OVERLOAD ── */
 const PO_CFG={
   'Incline Barbell Press':{repMin:5,repMax:8,step:2.5},
