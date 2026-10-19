@@ -658,9 +658,10 @@ const HABIT_ICONS_LIST=['💪','🏃','💧','😴','📚','🧘','🥗','🎯',
 const ROUTINE={1:{label:'Lunes',type:'Upper Body',emoji:'upper',exercises:[{name:'Incline Barbell Press',muscle:'Pecho'},{name:'Pec Deck Fly',muscle:'Pecho'},{name:'Lat Pulldown',muscle:'Espalda'},{name:'Barbell Row',muscle:'Espalda'},{name:'Lateral Raises',muscle:'Hombros'},{name:'Preacher Curl',muscle:'Biceps'},{name:'Cable Pushdown',muscle:'Triceps'}]},2:{label:'Martes',type:'Lower Body',emoji:'lower',exercises:[{name:'Leg Extension',muscle:'Cuadriceps'},{name:'Leg Press',muscle:'Cuad/Glut'},{name:'Hip Adductor Machine',muscle:'Aductores'},{name:'Standing Calf Raises',muscle:'Gemelos'},{name:'Cable Crunch',muscle:'Core'},{name:'Plank',muscle:'Core'}]},3:{label:'Miercoles',type:'Descanso',emoji:'rest',exercises:[]},4:{label:'Jueves',type:'Upper Body',emoji:'upper',exercises:[{name:'Seated Chest Press',muscle:'Pecho'},{name:'Barbell Row',muscle:'Espalda'},{name:'Rear Delt Machine',muscle:'Post. Hombro'},{name:'Lat Pulldown Supine',muscle:'Espalda'},{name:'Lateral Raises',muscle:'Hombros'},{name:'Bayesian Curl',muscle:'Biceps'},{name:'Preacher Curl',muscle:'Biceps'},{name:'Overhead Cable Ext',muscle:'Triceps'},{name:'Cable Pushdown',muscle:'Triceps'}]},5:{label:'Viernes',type:'Lower Body',emoji:'lower',exercises:[{name:'Seated Leg Curl',muscle:'Isquios'},{name:'Romanian Deadlift',muscle:'Isquios'},{name:'Hip Thrust',muscle:'Gluteos'},{name:'Standing Calf Raises',muscle:'Gemelos'},{name:'Hanging Leg Raises',muscle:'Core'},{name:'Ab Wheel Rollout',muscle:'Core'}]},6:{label:'Sabado',type:'Descanso',emoji:'rest',exercises:[]},0:{label:'Domingo',type:'Descanso',emoji:'rest',exercises:[]}};
 function isTD(d){return ROUTINE[d]&&ROUTINE[d].exercises.length>0;}
 function today(){return new Date().toLocaleDateString('es-CL');}
-function todayISO(){return new Date().toISOString().split('T')[0];}
-function getActiveDateString(){const now=new Date();if(now.getHours()<6){const y=new Date(now);y.setDate(now.getDate()-1);return y.toISOString().split('T')[0];}return now.toISOString().split('T')[0];}
-function getTomorrowDateString(){const now=new Date();if(now.getHours()<6)return now.toISOString().split('T')[0];const t=new Date(now);t.setDate(now.getDate()+1);return t.toISOString().split('T')[0];}
+function localISO(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function todayISO(){return localISO(new Date());}
+function getActiveDateString(){const now=new Date();if(now.getHours()<6){const y=new Date(now);y.setDate(now.getDate()-1);return localISO(y);}return localISO(now);}
+function getTomorrowDateString(){const now=new Date();if(now.getHours()<6)return localISO(now);const t=new Date(now);t.setDate(now.getDate()+1);return localISO(t);}
 function dateISO(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
 function dowISO(k){const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getDay();}
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
@@ -720,7 +721,7 @@ function buildCtx(){
   const pesoActual=S.peso.length?S.peso[S.peso.length-1].kg+' kg':'sin registro';
   const now=new Date(),cy=now.getFullYear(),cm=now.getMonth();
   let wStreak=0;const cd2=new Date(now);
-  while(true){const key=cd2.toISOString().split('T')[0],dow=cd2.getDay();if(isTD(dow)){if(S.wAttended[key])wStreak++;else break;}cd2.setDate(cd2.getDate()-1);if(cd2<new Date(cy,cm,1))break;}
+  while(true){const key=localISO(cd2),dow=cd2.getDay();if(isTD(dow)){if(S.wAttended[key])wStreak++;else break;}cd2.setDate(cd2.getDate()-1);if(cd2<new Date(cy,cm,1))break;}
   return'Eres el coach personal de '+pf.nombre+'. Ayúdale a rendir al máximo cada día.\nDatos actuales:\n- Calorías hoy: '+kcal+'/'+getCalGoal()+'\n- Hábitos completados: '+habitsDone+'/'+S.habits.length+'\n- Sueño última noche: '+(lastSleep?lastSleep.hours+'h calidad '+lastSleep.quality+'/5':'sin registro')+'\n- Peso actual: '+pesoActual+' (objetivo '+pf.pesoObjetivo+' kg)\n- Racha de entrenamiento: '+wStreak+' días\n\nSé directo, motivador y concreto. Máximo 4 oraciones.';
 }
 async function callAI(messages,max){
@@ -983,7 +984,7 @@ function renderWkStats(){
   let planned=0,attended=0;
   for(let d=1;d<=Math.min(days,now.getDate());d++){const dow=new Date(y,m,d).getDay();if(isTD(dow)){planned++;if(S.wAttended[dateISO(y,m,d)])attended++;}}
   let streak=0;const cd=new Date(now);
-  while(true){const key=cd.toISOString().split('T')[0],dow=cd.getDay();if(isTD(dow)){if(S.wAttended[key])streak++;else break;}cd.setDate(cd.getDate()-1);if(cd<new Date(y,m,1))break;}
+  while(true){const key=localISO(cd),dow=cd.getDay();if(isTD(dow)){if(S.wAttended[key])streak++;else break;}cd.setDate(cd.getDate()-1);if(cd<new Date(y,m,1))break;}
   const pct=planned?Math.round(attended/planned*100):0;
   // streak
   const streakEl=document.getElementById('wk-streak');
@@ -1572,7 +1573,7 @@ function renderWater(){
 function renderWaterChart(){
   const log=getWaterLog();
   const last7=[];
-  for(let d=6;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last7.push(dt.toISOString().split('T')[0]);}
+  for(let d=6;d>=0;d--){const dt=new Date();dt.setDate(dt.getDate()-d);last7.push(localISO(dt));}
   const vals=last7.map(date=>{const e=log[date]||[];return+(e.reduce((a,x)=>a+x.ml,0)/200).toFixed(1);});
   const card=document.getElementById('water-chart-card');if(!card)return;
   card.style.display='block';
@@ -1689,7 +1690,7 @@ function calcDayScores(){
   if(lastSleep){hasData=true;recovery=Math.min(50,(lastSleep.hours/8)*50)+((lastSleep.quality/5)*50);}
   // consecutive training days
   let consec=0;const cd=new Date();
-  for(let i=0;i<14;i++){const key=cd.toISOString().split('T')[0],dow=cd.getDay();if(isTD(dow)&&S.wAttended[key])consec++;else if(isTD(dow))break;cd.setDate(cd.getDate()-1);}
+  for(let i=0;i<14;i++){const key=localISO(cd),dow=cd.getDay();if(isTD(dow)&&S.wAttended[key])consec++;else if(isTD(dow))break;cd.setDate(cd.getDate()-1);}
   const isRestDay=!isTD(new Date().getDay());
   return{energy:Math.round(energy),recovery:Math.round(recovery),consec,isRestDay,hasData,habitsDone,habitsTotal,kcal,goal};
 }
